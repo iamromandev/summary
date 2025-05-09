@@ -1,0 +1,26 @@
+target-version = "py313"
+line-length = 100
+
+exclude = [
+    ".git",
+    ".hg",
+    ".mypy_cache",
+    ".tox",
+    ".venv",
+    ".vscode",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+]
+
+[lint]
+select = [
+    "E",   # pycodestyle
+    "F",   # Pyflakes
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+    "SIM", # flake8-simplify
+    "I",   # isort
+    "YTT", # type checking
+]
