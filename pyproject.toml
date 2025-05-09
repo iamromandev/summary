@@ -15,7 +15,7 @@ dependencies = [
     "loguru>=0.7.3",
     "fastapi>=0.115.12",
     "uvicorn>=0.34.2",
-    "sqlmodel>=0.0.24",
+    "tortoise-orm>=0.25.0",
 ]
 
 
