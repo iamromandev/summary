@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from core.constants import WEB_URL
 from core.scraper import get_raw_text
+from routes.etl import router as etl_router
 
 app = FastAPI(title="Summary Application")
 
@@ -14,6 +15,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(etl_router)
 
 @app.get("/")
 async def root():
