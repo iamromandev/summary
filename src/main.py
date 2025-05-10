@@ -1,7 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from core.scraper import get_raw_text
+
 from core.constants import WEB_URL
+from core.scraper import get_raw_text
 
 app = FastAPI(title="Summary Application")
 

@@ -44,7 +44,6 @@ RUN pip install uv
 # copy project requirement files here to ensure they will be cached.
 WORKDIR $SETUP_PATH
 COPY pyproject.toml $SETUP_PATH
-#COPY . $SETUP_PATH
 
 # Create and activate virtual environment
 RUN uv venv
@@ -65,3 +64,4 @@ WORKDIR $WORK_DIR
 
 COPY --from=builder $SETUP_PATH $SETUP_PATH
 COPY . $WORK_DIR
+RUN playwright install --with-deps chromium firefox webkit
