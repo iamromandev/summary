@@ -50,7 +50,7 @@ services:
       db:
         condition: service_healthy
     command: >
-      bash -c "uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload"
+      bash -c "python src/main.py"
 
   prometheus:
     platform: linux/arm64
