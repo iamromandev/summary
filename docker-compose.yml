@@ -37,6 +37,7 @@ services:
       args:
         ENV: local
         WORK_DIR: /workdir
+        INSTALL_DIR: /opt/install
         PW_DIR: /pwdir
     ports:
       - 8000:8000

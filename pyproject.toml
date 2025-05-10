@@ -10,13 +10,14 @@ authers = [
     { name = "Roman", email = "iamromandev@gmail.com" }
 ]
 readme = "README.md"
-requires-python = "==3.13.2"
+requires-python = "==3.12.9"
 dependencies = [
     "loguru>=0.7.3",
     "uvicorn>=0.34.2",
     "fastapi>=0.115.12",
     "tortoise-orm>=0.25.0",
     "playwright>=1.52.0",
+    "spacy>=3.8.5",
 ]
 
 
