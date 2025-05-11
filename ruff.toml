@@ -24,3 +24,6 @@ select = [
     "I",   # isort
     "YTT", # type checking
 ]
+
+[lint.extend-per-file-ignores]
+"*/constants.py" = ["E501"]
