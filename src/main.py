@@ -1,8 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from core.constants import WEB_URL
-from core.scraper import get_raw_text
 from routes.etl import router as etl_router
 
 app = FastAPI(title="Summary Application")
@@ -17,6 +15,7 @@ app.add_middleware(
 
 app.include_router(etl_router)
 
+
 @app.get("/")
 async def root():
     return {"message": "Welcome to the Root!"}
@@ -29,7 +28,7 @@ async def home():
 
 @app.get("/scrape", tags=["scrape"])
 async def scrape():
-    text: str | None = await get_raw_text(WEB_URL)
+    text: str | None = "await get_raw_text(WEB_URL)"
     return {"body": text or ""}
 
 
