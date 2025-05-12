@@ -1,8 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from core.config import settings
-from routes.etl import router as etl_router
+from src.core.config import settings
+from src.db.database import init_db
+from src.routes.etl import router as etl_router
 
 app = FastAPI(
     title="Summary Application",
@@ -16,6 +17,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+init_db(app)
 
 app.include_router(etl_router)
 

@@ -4,7 +4,7 @@ from typing import NoReturn, Self
 from loguru import logger
 from playwright.async_api import Browser, BrowserContext, Page, Playwright, async_playwright
 
-from core.constants import PW_USER_AGENT
+from src.core.constants import PW_USER_AGENT
 
 
 class PlaywrightClient:

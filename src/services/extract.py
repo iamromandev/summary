@@ -2,7 +2,7 @@ from typing import NoReturn
 
 from loguru import logger
 
-from core.clients import PlaywrightClient
+from src.core.clients import PlaywrightClient
 
 
 class ExtractService:
