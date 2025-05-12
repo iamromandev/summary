@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from core.config import settings
-from routes.etl import router as etl_router
+from src.core.config import settings
+from src.routes.etl import router as etl_router
 
 app = FastAPI(
     title="Summary Application",
