@@ -1,28 +1,28 @@
 services:
-#  db:
-#    platform: linux/arm64
-#    image: mariadb:10.6.21
-#    hostname: db
-#    container_name: db
-#    restart: on-failure
-#    environment:
-#      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
-#      MYSQL_DATABASE: ${DB_NAME}
-#      MYSQL_USER: ${DB_USER}
-#      MYSQL_PASSWORD: ${DB_PASSWORD}
-#    ports:
-#      - 3306:3306
-#    volumes:
-#      - db:/var/lib/mysql/data
-#    networks:
-#      - db
-#    command: [ "mysqld", "--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci" ]
-#    healthcheck:
-#      test: mysqladmin ping -h 127.0.0.1 -u $$MYSQL_USER --password=$$MYSQL_PASSWORD
-#      start_period: 3s
-#      interval: 5s
-#      timeout: 3s
-#      retries: 3
+  db:
+    platform: linux/arm64
+    image: mariadb:10.6.21
+    hostname: db
+    container_name: db
+    restart: on-failure
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - 3306:3306
+    volumes:
+      - db:/var/lib/mysql/data
+    networks:
+      - db
+    command: [ "mysqld", "--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci" ]
+    healthcheck:
+      test: mysqladmin ping -h 127.0.0.1 -u $$MYSQL_USER --password=$$MYSQL_PASSWORD
+      start_period: 3s
+      interval: 5s
+      timeout: 3s
+      retries: 3
 
   server:
     platform: linux/arm64
@@ -42,14 +42,14 @@ services:
       - 8000:8000
     volumes:
       - .:/workdir
-    #links:
-     # - db
+    links:
+      - db
     networks:
       - db
       - server
-    #depends_on:
-     # db:
-      #  condition: service_healthy
+    depends_on:
+      db:
+        condition: service_healthy
     command: >
       bash -c "uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload"
 
