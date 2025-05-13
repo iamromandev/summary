@@ -1,1 +1,1 @@
-from .playwright_client import PlaywrightClient as PlaywrightClient
+from .playwright_client import PlaywrightClient
