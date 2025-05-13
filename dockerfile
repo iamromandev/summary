@@ -70,4 +70,4 @@ WORKDIR $WORK_DIR
 
 COPY --from=builder $INSTALL_DIR $INSTALL_DIR
 COPY . $WORK_DIR
-#RUN playwright install --with-deps chromium
+RUN playwright install --with-deps chromium
