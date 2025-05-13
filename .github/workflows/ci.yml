@@ -1,0 +1,48 @@
+name: Ruff - Lint
+
+on:
+  pull_request:
+    types: [ opened, synchronize, reopened ]
+  push:
+    branches: [ main ]
+
+env:
+  WORK_DIR: src
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v4
+
+      - name: Set up python 3.12.9
+        id: setup-python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.12.9
+
+      - name: Update pip
+        id: update-pip
+        run: pip install --upgrade pip
+
+      - name: Install uv
+        id: install-uv
+        run: pip install uv
+
+      - name: Set up virtual environment with uv
+        id: setup-uv
+        run: uv venv
+
+      - name: Install dependencies
+        id: install-deps
+        run: uv pip install -r /home/runner/work/summary/summary/pyproject.toml
+
+      - name: Install ruff
+        id: install-ruff
+        run: uv tool install ruff
+
+      - name: Run Ruff and list output
+        id: ruff-lint
+        run: uv tool run ruff check /home/runner/work/summary/summary/src --output-format=github
