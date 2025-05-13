@@ -27,3 +27,4 @@ select = [
 
 [lint.extend-per-file-ignores]
 "*/constants.py" = ["E501"]
+"*/__init__.py" = ["F401"]
