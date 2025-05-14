@@ -13,4 +13,4 @@ class UrlValidator(Validator):
                     return None
             except Exception:
                 pass
-        raise ValidationError(f"'{value}' is not a valid URL.")
+        raise ValidationError(f"'{value}' is not a valid url.")

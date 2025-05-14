@@ -1,14 +1,17 @@
-
 from loguru import logger
 from tortoise.exceptions import ValidationError
 
+import src.core.libs.common as common
 from src.core.clients import PlaywrightClient
 from src.db.models import Url
+from src.repos.url_repo import UrlRepo
 
 
 class ExtractService:
-    def __init__(self) -> None:
-        pass
+    url_repo: UrlRepo
+
+    def __init__(self, url_repo: UrlRepo) -> None:
+        self.url_repo = url_repo
 
     async def extract_urls(self, url: str) -> list[str] | None:
         async with PlaywrightClient() as pc:
@@ -16,8 +19,10 @@ class ExtractService:
             logger.info(f"Success|ExtractService|extract_urls {urls}")
             for url in urls or []:
                 try:
-                    url: Url = await Url.create(url=url, base=url)
-                    logger.info(f"Valid URL created {url}")
+                    url_obj: Url = await  self.url_repo.create_or_update(
+                        url=url, base=common.get_base_url(url)
+                    )
+                    logger.info(f"Valid URL created {url_obj}")
                 except ValidationError as error:
                     logger.error(f"Validation Error: {error}")
             return urls
