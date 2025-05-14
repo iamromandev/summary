@@ -1,15 +1,16 @@
-import uuid
 
-from tortoise.fields import CharField, DatetimeField, UUIDField
-from tortoise.models import Model
+from tortoise import fields
+
+from ..validators import UrlValidator
+from .base import Base
 
 
-class Url(Model):
-    id = UUIDField(pk=True, default=uuid.uuid4)
-    url = CharField(max_length=4096, null=False, unique=True)
-    base = CharField(max_length=2048, null=True)
-    created_at = DatetimeField(auto_now_add=True)
-    updated_at = DatetimeField(auto_now=True)
+class Url(Base):
+    url = fields.CharField(max_length=2048, unique=True, null=False, validators=[UrlValidator()])
+    base = fields.CharField(max_length=2048, null=True)
+
+    class Meta:
+        ordering = ["url"]
 
     def __str__(self) -> str:
         return str(self.url)
