@@ -1,5 +1,7 @@
 [build-system]
-requires = ["hatchling"]
+requires = [
+    "hatchling",
+]
 build-backend = "hatchling.build"
 
 [project]
@@ -7,17 +9,18 @@ name = "summary"
 version = "0.0.1"
 description = "Summary application to summarize the scraped data"
 authers = [
-    { name = "Roman", email = "iamromandev@gmail.com" }
+    { name = "Roman", email = "iamromandev@gmail.com" },
 ]
 readme = "README.md"
 requires-python = "==3.12.9"
 dependencies = [
     "loguru>=0.7.3",
     "uvicorn>=0.34.2",
-    "fastapi>=0.115.12",
+    "fastapi[all]>=0.115.12",
     "pydantic[email,timezone]>=2.11.4",
     "pydantic-settings>=2.9.1",
     "tortoise-orm[accel,aiomysql]>=0.25.0",
+    "aerich[mysql,toml]>=0.9.0",
     "playwright>=1.52.0",
     "spacy>=3.8.5",
 ]
@@ -31,3 +34,8 @@ dev = [
 
 [tool.uv]
 package = false
+
+[tool.aerich]
+tortoise_orm = "src.db.database.DB_CONFIG"
+location = "./src/db/migrations"
+src_folder = "./."

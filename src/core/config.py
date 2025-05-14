@@ -1,10 +1,12 @@
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from .types import Env
+
 
 class Settings(BaseSettings):
     # core
-    env: str = Field(...)
+    env: Env = Field(...)
     debug: bool = Field(...)
     # db
     db_host: str = Field(...)
@@ -19,6 +21,10 @@ class Settings(BaseSettings):
         env_file_encoding="utf-8",
         extra="allow"
     )
+
+    @property
+    def is_prod(self) -> bool:
+        return self.env == Env.PROD
 
 
 settings = Settings()
