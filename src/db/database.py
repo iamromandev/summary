@@ -1,4 +1,3 @@
-
 from fastapi import FastAPI
 from tortoise.contrib.fastapi import register_tortoise
 
@@ -19,7 +18,7 @@ DB_CONFIG = {
     },
     "apps": {
         "models": {
-            "models": ["src.db.models"],
+            "models": ["aerich.models", "src.db.models"],
             "default_connection": "default",
         }
     }
@@ -30,6 +29,6 @@ def init_db(app: FastAPI) -> None:
     register_tortoise(
         app,
         config=DB_CONFIG,
-        generate_schemas=True,
+        generate_schemas=False,  # make a decision using settings Env
         add_exception_handlers=True,
     )
