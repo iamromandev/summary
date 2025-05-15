@@ -6,10 +6,10 @@ from pydantic import BaseModel, Field
 from .errors import Error
 from .types import Code, Status
 
-T = TypeVar("T")
+T = TypeVar("T", bound="BaseModel")
 
 
-class Resp(BaseModel, Generic[T]):
+class Resp(Generic[T]):
     status: Annotated[Status, Status.SUCCESS]
     code: Annotated[Code, Code.OK]
     data: Annotated[T | None, None]

@@ -1,18 +1,13 @@
 import json
 from enum import Enum
-from typing import Any, TypeVar
+from typing import Any
 
 from fastapi import status
-
-T = TypeVar("T")
 
 
 class BaseEnum(Enum):
     @classmethod
     def get_value(cls: type["BaseEnum"], value: Any) -> "BaseEnum":
-        """
-        Get the enum member by value. Raises ValueError if not found.
-        """
         for member in cls:
             if member.value == value:
                 return member
@@ -20,44 +15,26 @@ class BaseEnum(Enum):
 
     @classmethod
     def list_values(cls) -> list[Any]:
-        """
-        Returns a list of all enum values.
-        """
         return [member.value for member in cls]
 
     @classmethod
     def list_names(cls) -> list[str]:
-        """
-        Returns a list of all enum member names.
-        """
         return [member.name for member in cls]
 
     @classmethod
     def to_dict(cls) -> dict[str, Any]:
-        """
-        Converts the enum to a dictionary (name -> value).
-        """
         return {member.name: member.value for member in cls}
 
     @classmethod
     def to_json(cls) -> str:
-        """
-        Converts the enum to a JSON string.
-        """
         return json.dumps(cls.to_dict(), ensure_ascii=False)
 
     @classmethod
     def is_valid_value(cls, value: Any) -> bool:
-        """
-        Checks if the value exists in the enum.
-        """
         return any(member.value == value for member in cls)
 
     @classmethod
     def is_valid_name(cls, name: str) -> bool:
-        """
-        Checks if the name exists in the enum.
-        """
         return name in cls.__members__
 
     def __str__(self) -> str:
@@ -67,7 +44,7 @@ class BaseEnum(Enum):
         return f"<{self.__class__.__name__}.{self.name}: {self.value}>"
 
 
-class Env(str, Enum):
+class Env(BaseEnum):
     LOCAL = "local"
     PROD = "prod"
 

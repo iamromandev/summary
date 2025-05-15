@@ -23,7 +23,7 @@ class PlaywrightClient:
         self.page: Page = await self.context.new_page()
 
     async def _load(self, url: str) -> Page:
-        await self.page.goto(url, timeout=60000, wait_until="networkidle")
+        await self.page.goto(url, wait_until="domcontentloaded")
         return self.page
 
     async def get_text(self, html_selector: str = "body") -> str:

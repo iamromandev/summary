@@ -8,7 +8,7 @@ build-backend = "hatchling.build"
 name = "summary"
 version = "0.0.1"
 description = "Summary application to summarize the scraped data"
-authers = [
+authors = [
     { name = "Roman", email = "iamromandev@gmail.com" },
 ]
 readme = "README.md"
@@ -20,7 +20,7 @@ dependencies = [
     "pydantic[email,timezone]>=2.11.4",
     "pydantic-settings>=2.9.1",
     "tortoise-orm[accel,aiomysql]>=0.25.0",
-    "aerich[mysql,toml]>=0.9.0",
+    "aerich[toml,mysql]>=0.9.0",
     "playwright>=1.52.0",
     "spacy>=3.8.5",
 ]
@@ -36,6 +36,6 @@ dev = [
 package = false
 
 [tool.aerich]
-tortoise_orm = "src.db.database.DB_CONFIG"
+tortoise_orm = "src.db.DB_CONFIG"
 location = "./src/db/migrations"
 src_folder = "./."

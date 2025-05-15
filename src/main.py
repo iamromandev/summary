@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 
 from src.core.config import settings
-from src.db.database import init_db
+from src.db import init_db
 from src.routes.etl import router as etl_router
 
 app = FastAPI(
