@@ -8,7 +8,7 @@ build-backend = "hatchling.build"
 name = "summary"
 version = "0.0.1"
 description = "Summary application to summarize the scraped data"
-authers = [
+authors = [
     { name = "Roman", email = "iamromandev@gmail.com" },
 ]
 readme = "README.md"
