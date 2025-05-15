@@ -18,7 +18,11 @@ DB_CONFIG = {
     },
     "apps": {
         "models": {
-            "models": ["aerich.models", "src.db.models"],
+            "models": ["src.db.models"],
+            "default_connection": "default",
+        },
+        "aerich": {
+            "models": ["aerich.models"],
             "default_connection": "default",
         }
     }
