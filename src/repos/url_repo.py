@@ -20,3 +20,4 @@ class UrlRepo(BaseRepo[Url]):
                 setattr(url_obj, attr, value)
             await url_obj.save()
         return url_obj
+

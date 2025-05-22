@@ -10,22 +10,21 @@ T = TypeVar("T", bound="BaseModel")
 
 
 class Resp(Generic[T]):
-    status: Annotated[Status, Status.SUCCESS]
-    code: Annotated[Code, Code.OK]
-    data: Annotated[T | None, None]
-    message: Annotated[str | None, Field(description="Optional message for the response")]
+    status: Annotated[Status, Field(default=Status.SUCCESS)]
+    code: Annotated[Code, Field(default=Code.OK)]
+    data: Annotated[T | None, Field(default=None)]
+    message: Annotated[str | None, Field(default="Optional message for the response")]
     timestamp: Annotated[datetime, Field(default_factory=lambda: datetime.now(UTC))]
-
 
 # Success
 class Meta(BaseModel):
-    page: Annotated[int, 1]
-    page_size: Annotated[int, 10]
-    total: Annotated[int, 100]
+    page: Annotated[int, Field(default=1)]
+    page_size: Annotated[int, Field(default=10)]
+    total: Annotated[int, Field(default=100)]
 
 
 class SuccessResp(Resp[T]):
-    meta: Meta | None = None
+    meta: Annotated[Meta | None, Field(default=None)]
 
     # @classmethod
     # def ok(
@@ -64,4 +63,4 @@ class SuccessResp(Resp[T]):
 
 # Error
 class ErrorResp(Resp[T]):
-    error: Annotated[Error, Error.empty]
+    error: Annotated[Error, Field(default=Error.empty)]
