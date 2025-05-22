@@ -1,3 +1,5 @@
+from functools import cached_property
+
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -8,6 +10,9 @@ class Settings(BaseSettings):
     # core
     env: Env = Field(...)
     debug: bool = Field(...)
+    # cache
+    redis_host: str = Field(...)
+    redis_port: int = Field(...)
     # db
     db_host: str = Field(...)
     db_port: int = Field(...)
@@ -25,6 +30,15 @@ class Settings(BaseSettings):
     @property
     def is_prod(self) -> bool:
         return self.env == Env.PROD
+
+    @cached_property
+    def cache_url(self) -> str:
+        return f"redis://{settings.redis_host}:{settings.redis_port}/0"
+
+    @cached_property
+    def db_url(self) -> str:
+        return f"{self.db_connection}://{self.db_user}:{self.db_password}@{self.db_host}:{self.db_port}/{self.db_name}"
+
 
 
 settings = Settings()

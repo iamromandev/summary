@@ -6,8 +6,15 @@ from fastapi import status
 
 
 class BaseEnum(Enum):
+
+    @property
+    def label(self) -> str:
+        if isinstance(self.value, str):
+            return self.value.replace("_", " ").title()
+        return str(self.value)
+
     @classmethod
-    def get_value(cls: type["BaseEnum"], value: Any) -> "BaseEnum":
+    def value_of(cls: type["BaseEnum"], value: Any) -> "BaseEnum":
         for member in cls:
             if member.value == value:
                 return member
@@ -46,6 +53,7 @@ class BaseEnum(Enum):
 
 class Env(BaseEnum):
     LOCAL = "local"
+    DEV = "dev"
     PROD = "prod"
 
 

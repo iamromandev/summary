@@ -3,7 +3,7 @@ from datetime import UTC, datetime
 
 from tortoise import fields
 
-from .base import Base
+from src.core.base import Base
 
 
 class State(Base):
@@ -14,8 +14,8 @@ class State(Base):
     class Meta:
         ordering = ["ref", "state"]
         unique_together = [("ref", "state")]
-        table_description = "State"
         table = "state"
+        table_description = "State"
 
     def __str__(self) -> str:
         return f"[State: {self.ref}, {self.state}]"

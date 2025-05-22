@@ -1,8 +1,9 @@
 
 from tortoise import fields
 
+from src.core.base import Base
+
 from ..validators import UrlValidator
-from .base import Base
 
 
 class Url(Base):
@@ -14,8 +15,8 @@ class Url(Base):
 
     class Meta:
         ordering = ["url"]
-        table_description = "Url"
         table = "url"
+        table_description = "Url"
 
     def __str__(self) -> str:
         return str(self.url)

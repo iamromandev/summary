@@ -13,6 +13,13 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
+      - name: Show working directory
+        run: |
+          echo "Current working dir:"
+          pwd
+          echo "Contents:"
+          ls -la
+
       - name: Checkout
         id: checkout
         uses: actions/checkout@v4
@@ -37,7 +44,7 @@ jobs:
 
       - name: Install dependencies
         id: install-deps
-        run: uv pip install -r /home/runner/work/summary/summary/pyproject.toml
+        run: uv pip install -r ./pyproject.toml
 
       - name: Install ruff
         id: install-ruff
@@ -45,4 +52,4 @@ jobs:
 
       - name: Run Ruff and list output
         id: ruff-lint
-        run: uv tool run ruff check /home/runner/work/summary/summary/src --output-format=github
+        run: uv tool run ruff check ./src --output-format=github
