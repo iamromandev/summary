@@ -1,6 +1,6 @@
 from typing import Any
 
-from src.core.repos import BaseRepo
+from src.core.base import BaseRepo
 from src.db.models import Url
 
 
