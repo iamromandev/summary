@@ -1,6 +1,5 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from loguru import logger
 
 from src.core.config import settings
 from src.db import init_db
@@ -22,17 +21,6 @@ app.add_middleware(
 app.include_router(etl_router)
 
 init_db(app)
-
-
-@app.on_event("startup")
-async def startup() -> None:
-    logger.info("Starting up...")
-    logger.info(f"Settings {settings}")
-
-
-@app.on_event("shutdown")
-async def shutdown() -> None:
-    logger.info("Shutting down...")
 
 
 @app.get("/")
