@@ -1,35 +1,43 @@
 import urllib.parse
-from typing import NoReturn, Self
+from typing import Annotated, Self
 
 from loguru import logger
 from playwright.async_api import Browser, BrowserContext, Page, Playwright, async_playwright
+from pydantic import Field
 
 from src.core.constants import PW_USER_AGENT
+from src.core.mixins import BaseMixins
 
 
-class PlaywrightClient:
-    playwright: Playwright
-    browser: Browser
-    context: BrowserContext
-    page: Page
+class PlaywrightClient(BaseMixins):
+    _playwright: Annotated[Playwright, Field(...)]
+    _browser: Annotated[Browser, Field(...)]
+    _context: Annotated[BrowserContext, Field(...)]
+    _page: Annotated[Page, Field(...)]
 
-    def __init__(self, headless: bool = True) -> NoReturn:
-        self.headless = headless
+    def __init__(
+        self,
+        headless: bool = True,
+        user_agent: str | None = None
+    ) -> None:
+        super().__init__()
+        self._headless = headless
+        self._user_agent = user_agent or PW_USER_AGENT
 
     async def start(self) -> None:
-        self.playwright: Playwright = await async_playwright().start()
-        self.browser: Browser = await self.playwright.chromium.launch(headless=self.headless)
-        self.context: BrowserContext = await self.browser.new_context(user_agent=PW_USER_AGENT)
-        self.page: Page = await self.context.new_page()
+        self._playwright: Playwright = await async_playwright().start()
+        self._browser: Browser = await self._playwright.chromium.launch(headless=self._headless)
+        self._context: BrowserContext = await self._browser.new_context(user_agent=PW_USER_AGENT)
+        self._page: Page = await self._context.new_page()
 
     async def _load(self, url: str) -> Page:
-        await self.page.goto(url, wait_until="domcontentloaded")
-        return self.page
+        await self._page.goto(url, wait_until="domcontentloaded")
+        return self._page
 
     async def get_text(self, html_selector: str = "body") -> str:
-        return await self.page.text_content(html_selector)
+        return await self._page.text_content(html_selector)
 
-    async def get_urls(self, url: str) -> list[str] | None:
+    async def get_urls(self, url: str) -> list[str]:
         try:
             page: Page = await self._load(url)
             urls = [
@@ -39,13 +47,14 @@ class PlaywrightClient:
             ]
             return urls
         except Exception as error:
-            logger.error(f"Error|PlaywrightClient|get_links {error}")
-        return None
+            logger.error(f"{self._tag}|get_urls(): {error}")
+            raise
 
-    async def close(self) -> NoReturn:
-        await self.context.close()
-        await self.browser.close()
-        await self.playwright.stop()
+    async def close(self) -> None:
+        logger.info(f"{self._tag}|Closing Playwright client...")
+        await self._context.close()
+        await self._browser.close()
+        await self._playwright.stop()
 
     # Optional: Async context manager support
     async def __aenter__(self) -> Self:

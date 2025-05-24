@@ -1,6 +1,7 @@
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Annotated
+from urllib.parse import urlparse
 
 import redis.asyncio as redis
 import toml
@@ -8,6 +9,19 @@ from pydantic import Field
 
 from src.core.clients import CacheClient
 
+
+def get_base_url(url: str) -> str:
+    """
+    Extracts the base URL from a given URL.
+
+    Parameters:
+        url (str): The full URL.
+
+    Returns:
+        str: The base URL (scheme + domain).
+    """
+    parsed_url = urlparse(url)
+    return f"{parsed_url.scheme}://{parsed_url.netloc}"
 
 async def get_app_version() -> str:
     try:
