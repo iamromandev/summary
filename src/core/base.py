@@ -12,7 +12,6 @@ from loguru import logger
 from pydantic import BaseModel, ConfigDict, Field
 from tortoise import fields, models, queryset
 
-from .clients import CacheClient
 from .formats import utc_iso_timestamp
 from .types import Code, Status
 
@@ -148,11 +147,11 @@ _DataT = TypeVar("_DataT", bound=BaseSchema)
 
 @dataclass
 class Response(ABC, Generic[_DataT]):
-    status: Annotated[Status, ...] = Status.SUCCESS
-    code: Annotated[Code, ...] = Code.OK
-    data: BaseSchema | list[BaseSchema] | Any | None = None
-    message: str | None = None
-    timestamp: str = DCField(default_factory=lambda: utc_iso_timestamp())
+    status: Annotated[Status, Field(default=Status.SUCCESS)] = Status.SUCCESS
+    code: Annotated[Code, Field(default=Code.OK)] = Code.OK
+    data: Annotated[BaseSchema | list[BaseSchema] | Any, Field(default=None)] = None
+    message: Annotated[str | None, Field(default=None)] = None
+    timestamp: Annotated[str, Field(...)] = DCField(default_factory=lambda: utc_iso_timestamp())
 
     @cached_property
     def _tag(self) -> str:
@@ -171,10 +170,10 @@ class Response(ABC, Generic[_DataT]):
 
 # service
 class BaseService:
-    _cache: Annotated[CacheClient, Field(...)]
+    _cache_client: Annotated[Any, Field(...)]
 
-    def __init__(self, cache: CacheClient) -> None:
-        self._cache = cache
+    def __init__(self, cache_client: Any) -> None:
+        self._cache_client = cache_client
 
     @cached_property
     def _tag(self) -> str:

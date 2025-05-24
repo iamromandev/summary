@@ -1,7 +1,7 @@
 from loguru import logger
 from tortoise.exceptions import ValidationError
 
-import src.core.libs.common as common
+import src.core.common as common
 from src.core.clients import PlaywrightClient
 from src.db.models import Url
 from src.repos.url_repo import UrlRepo

@@ -49,6 +49,11 @@ ruff:
 	make install
 	uvx ruff check --fix
 
+.PHONY: ty
+ty:
+	make install
+	uvx ty check
+
 .PHONY: run
 run:
 	make ruff
