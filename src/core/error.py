@@ -1,7 +1,7 @@
 import gc
 from dataclasses import dataclass
 from functools import reduce
-from typing import Annotated, Any
+from typing import Annotated, Any, cast
 
 from fastapi import FastAPI, Request
 from fastapi.encoders import jsonable_encoder
@@ -28,9 +28,9 @@ class ErrorDetail(BaseSchema):
 class Error(Exception):
     def __init__(
         self,
-        code: Annotated[Code | None, Code.INTERNAL_SERVER_ERROR] = Code.INTERNAL_SERVER_ERROR,
+        code: Annotated[Code, Field(default=Code.INTERNAL_SERVER_ERROR)] = Code.INTERNAL_SERVER_ERROR,
         message: Annotated[str | None, Field(default=None)] = None,
-        type: Annotated[ErrorType, ErrorType.SERVER_ERROR] = ErrorType.SERVER_ERROR,
+        type: Annotated[ErrorType, Field(default=ErrorType.SERVER_ERROR)] = ErrorType.SERVER_ERROR,
         details: Annotated[list[ErrorDetail] | None, Field(default=None)] = None,
         retry_able: Annotated[bool, Field(default=False)] = False
     ) -> None:
@@ -56,9 +56,9 @@ class Error(Exception):
     @classmethod
     def create(
         cls: type["Error"],
-        code: Code | None = Code.INTERNAL_SERVER_ERROR,
+        code: Code = Code.INTERNAL_SERVER_ERROR,
         message: str | None = None,
-        type: ErrorType | None = ErrorType.SERVER_ERROR
+        type: ErrorType = ErrorType.SERVER_ERROR
     ) -> "Error":
         return cls(
             code=code,
@@ -72,7 +72,7 @@ class Error(Exception):
         message: str | None = None
     ) -> "Error":
         return cls(
-            code=Code.BAD_REQUEST,
+            code=cast(Code, Code.BAD_REQUEST),
             message=message,
             type=ErrorType.BAD_REQUEST,
         )
@@ -83,7 +83,7 @@ class Error(Exception):
         message: str | None = None
     ) -> "Error":
         return cls(
-            code=Code.UNAUTHORIZED,
+            code=cast(Code, Code.UNAUTHORIZED),
             message=message,
             type=ErrorType.UNAUTHORIZED,
         )
@@ -94,7 +94,7 @@ class Error(Exception):
         message: str | None = None
     ) -> "Error":
         return cls(
-            code=Code.NOT_FOUND,
+            code=cast(Code, Code.NOT_FOUND),
             message=message,
             type=ErrorType.NOT_FOUND,
         )
@@ -138,8 +138,6 @@ def config_global_errors(app: FastAPI) -> None:
         return ErrorResponse(
             error=error
         ).to_resp()
-
-
 
     @app.exception_handler(Error)
     async def catch_error(request: Request, error: Error) -> JSONResponse:
