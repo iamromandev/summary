@@ -10,9 +10,6 @@ class Settings(BaseSettings):
     # core
     env: Env = Field(...)
     debug: bool = Field(...)
-    # cache
-    redis_host: str = Field(...)
-    redis_port: int = Field(...)
     # db
     db_host: str = Field(...)
     db_port: int = Field(...)
@@ -20,6 +17,9 @@ class Settings(BaseSettings):
     db_user: str = Field(...)
     db_password: str = Field(...)
     db_root_password: str = Field(...)
+    # cache
+    redis_host: str = Field(...)
+    redis_port: int = Field(...)
 
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -32,13 +32,12 @@ class Settings(BaseSettings):
         return self.env == Env.PROD
 
     @cached_property
-    def cache_url(self) -> str:
-        return f"redis://{settings.redis_host}:{settings.redis_port}/0"
-
-    @cached_property
     def db_url(self) -> str:
         return f"{self.db_connection}://{self.db_user}:{self.db_password}@{self.db_host}:{self.db_port}/{self.db_name}"
 
+    @cached_property
+    def cache_url(self) -> str:
+        return f"redis://{settings.redis_host}:{settings.redis_port}/0"
 
 
 settings = Settings()

@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from loguru import logger
 
 from src.core.config import settings
+from src.core.error import config_global_errors
 from src.db import init_db
 from src.routes.etl import router as etl_router
 
@@ -20,36 +20,8 @@ app.add_middleware(
 )
 
 app.include_router(etl_router)
-
+config_global_errors(app)
 init_db(app)
-
-
-@app.on_event("startup")
-async def startup() -> None:
-    logger.info("Starting up...")
-    logger.info(f"Settings {settings}")
-
-
-@app.on_event("shutdown")
-async def shutdown() -> None:
-    logger.info("Shutting down...")
-
-
-@app.get("/")
-async def root():
-    return {"message": "Welcome to the Root!"}
-
-
-@app.get("/home", tags=["home"])
-async def home():
-    return {"message": "This is the home page"}
-
-
-@app.get("/scrape", tags=["scrape"])
-async def scrape():
-    text: str | None = "await get_raw_text(WEB_URL)"
-    return {"body": text or ""}
-
 
 if __name__ == "__main__":
     import uvicorn

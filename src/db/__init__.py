@@ -1,4 +1,6 @@
 from fastapi import FastAPI
+from loguru import logger
+from tortoise import Tortoise
 from tortoise.contrib.fastapi import register_tortoise
 
 from src.core.config import settings
@@ -36,3 +38,12 @@ def init_db(app: FastAPI) -> None:
         generate_schemas=False,  # make a decision using settings Env
         add_exception_handlers=True,
     )
+
+
+async def get_db_health() -> bool:
+    try:
+        await Tortoise.get_connection("default").execute_script("SELECT 1;")
+        return True
+    except Exception as error:
+        logger.error(f"Error|get_db_health(): {str(error)}")
+        return False

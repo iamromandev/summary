@@ -4,7 +4,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends
 from loguru import logger
 
 from src.core.constants import WEB_URL
-from src.services.deps import get_extract_service
+from src.services import get_extract_service
 from src.services.extract import ExtractService
 
 router = APIRouter(prefix="/etl", tags=["etl"])
