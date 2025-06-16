@@ -1,5 +1,5 @@
 ### base image ###
-ARG PYTHON_VERSION=3.12.9
+ARG PYTHON_VERSION=3.12.10
 
 FROM python:$PYTHON_VERSION AS base
 
@@ -70,4 +70,4 @@ WORKDIR $WORK_DIR
 
 COPY --from=builder $INSTALL_DIR $INSTALL_DIR
 COPY . $WORK_DIR
-#RUN playwright install --with-deps chromium
+RUN playwright install --with-deps chromium

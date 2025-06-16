@@ -6,10 +6,10 @@ from playwright.async_api import Browser, BrowserContext, Page, Playwright, asyn
 from pydantic import Field
 
 from src.core.constants import PW_USER_AGENT
-from src.core.mixins import BaseMixins
+from src.core.mixins import BaseMixin
 
 
-class PlaywrightClient(BaseMixins):
+class PlaywrightClient(BaseMixin):
     _playwright: Annotated[Playwright, Field(...)]
     _browser: Annotated[Browser, Field(...)]
     _context: Annotated[BrowserContext, Field(...)]

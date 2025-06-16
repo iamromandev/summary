@@ -40,6 +40,12 @@ class Error(Exception):
         self.details = details
         self.retry_able = retry_able
 
+    def __str__(self) -> str:
+        return (
+            f"Error(code={self.code}, message={self.message}, "
+            f"type={self.type}, details={self.details}, retry_able={self.retry_able})"
+        )
+
     @classmethod
     def empty(cls: type["Error"]) -> "Error":
         return cls(
