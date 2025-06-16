@@ -10,9 +10,9 @@ from .health import HealthService
 
 
 async def get_health_service(
-    cache: CacheClient = Depends(get_cache)
+    cache_client: CacheClient = Depends(get_cache)
 ) -> AsyncGenerator[HealthService]:
-    yield HealthService(cache)
+    yield HealthService(cache_client)
 
 
 async def get_extract_service(

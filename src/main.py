@@ -4,7 +4,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from src.core.config import settings
 from src.core.error import config_global_errors
 from src.db import init_db
-from src.routes.etl import router as etl_router
+from src.routes import etl_router
+from src.routes.health import health_router
 
 app = FastAPI(
     title="Summary Application",
@@ -19,7 +20,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(health_router)
 app.include_router(etl_router)
+
 config_global_errors(app)
 init_db(app)
 
