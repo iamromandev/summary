@@ -23,7 +23,8 @@ def get_base_url(url: str) -> str:
     parsed_url = urlparse(url)
     return f"{parsed_url.scheme}://{parsed_url.netloc}"
 
-async def get_app_version() -> str:
+
+def get_app_version() -> str:
     try:
         with open("pyproject.toml") as f:
             data = toml.load(f)
@@ -54,6 +55,7 @@ def get_file_extension(filename: str) -> str | None:
     ext = Path(filename).suffix
     file_extension = ext.lstrip('.') if ext else None
     return file_extension
+
 
 def current_timestamp(format: str = "%Y%m%d%H%M%S") -> str:
     timestamp = datetime.now(UTC).strftime(format)

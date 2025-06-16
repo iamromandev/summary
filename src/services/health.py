@@ -12,9 +12,11 @@ class HealthService(BaseService):
         super().__init__(cache_client)
 
     async def check_health(self) -> HealthSchema:
+        app_version = get_app_version()
         db_status = Status.SUCCESS if await get_db_health() else Status.ERROR
         cache_status = Status.SUCCESS if await get_cache_health(self._cache_client) else Status.ERROR
-        app_version = await get_app_version()
-        health: HealthSchema = HealthSchema(db=db_status, cache=cache_status, version=app_version)
+        health: HealthSchema = HealthSchema(
+            version=app_version, db=db_status, cache=cache_status
+        )
         health.log()
         return health
