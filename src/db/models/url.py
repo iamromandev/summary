@@ -2,8 +2,7 @@
 from tortoise import fields
 
 from src.core.base import Base
-
-from ..validators import UrlValidator
+from src.db.validators import UrlValidator
 
 
 class Url(Base):
