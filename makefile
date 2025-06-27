@@ -63,3 +63,7 @@ run:
 export:
 	make ruff
 	uv export --format requirements-txt > requirements.txt
+
+.PHONY: git add .
+add:
+	git add .

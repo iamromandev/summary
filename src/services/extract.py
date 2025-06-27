@@ -20,7 +20,7 @@ class ExtractService:
             for url in urls or []:
                 try:
                     url_obj: Url = await  self.url_repo.create_or_update(
-                        url=url, base=common.get_base_url(url)
+                        url=url, base_url=common.get_base_url(url)
                     )
                     logger.info(f"Valid URL created {url_obj}")
                 except ValidationError as error:

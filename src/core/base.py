@@ -1,5 +1,6 @@
 import uuid
 from abc import ABC, abstractmethod
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from dataclasses import field as DCField
 from datetime import UTC, datetime
@@ -39,41 +40,133 @@ class Base(models.Model):
 
 # repo - operation on the database
 class BaseRepo(Generic[_ModelT]):
-    model: type[_ModelT]
+    _model: type[_ModelT]
 
     def __init__(self, model: type[_ModelT]) -> None:
-        self.model = model
+        self._model = model
 
     @cached_property
     def _tag(self) -> str:
         return self.__class__.__name__
 
-    async def get_by_pk(self, pk: str | uuid.UUID) -> _ModelT | None:
-        return await self.model.get_or_none(pk=pk)
+    async def get_by_pk(
+        self,
+        pk: str | uuid.UUID,
+        select_related: str | Sequence[str] | None = None,
+        prefetch_related: str | Sequence[str] | None = None,
+    ) -> _ModelT | None:
+        query: queryset.QuerySet[_ModelT] = self._model.filter(pk=pk)
 
-    async def get_all(self, sort: str | None = None) -> list[_ModelT]:
-        query: queryset.QuerySet = self.model.all()
+        # Apply select_related (JOINs for foreign keys)
+        if select_related:
+            if isinstance(select_related, str):
+                select_related = [select_related]
+            query = query.select_related(*select_related)
 
+        # Apply prefetch_related (for reverse/many-to-many relations)
+        if prefetch_related:
+            if isinstance(prefetch_related, str):
+                prefetch_related = [prefetch_related]
+            query = query.prefetch_related(*prefetch_related)
+
+        return await query.first()
+
+    async def get_all(
+        self,
+        sort: str | None = None,
+        page: int = 1,
+        page_size: int = 10,
+        select_related: str | Sequence[str] | None = None,
+        prefetch_related: str | Sequence[str] | None = None,
+    ) -> tuple[list[_ModelT], dict[str, int]]:
+        query: queryset.QuerySet[_ModelT] = self._model.all()
+
+        # Apply select_related (JOINs)
+        if select_related:
+            if isinstance(select_related, str):
+                select_related = [select_related]
+            query = query.select_related(*select_related)
+
+        # Apply prefetch_related (extra queries for reverse relations)
+        if prefetch_related:
+            if isinstance(prefetch_related, str):
+                prefetch_related = [prefetch_related]
+            query = query.prefetch_related(*prefetch_related)
+
+        # Sorting
         if sort:
             order_fields = [field.strip() for field in sort.split(",")]
             query = query.order_by(*order_fields)
 
-        return await query
+        # Pagination metadata
+        total = await query.count()
+        offset = (page - 1) * page_size
+        results = await query.offset(offset).limit(page_size)
+
+        meta = {
+            "page": page,
+            "page_size": page_size,
+            "total": total,
+            "total_pages": (total + page_size - 1) // page_size,
+        }
+
+        return results, meta
 
     async def exists(self, **kwargs: Any) -> bool:
-        return await self.model.filter(**kwargs).exists()
+        return await self._model.filter(**kwargs).exists()
 
-    async def filter(self, **kwargs: Any) -> list[_ModelT]:
-        return await self.model.filter(**kwargs).all()
+    async def filter(
+        self,
+        *args: Any,
+        select_related: str | list[str] | None = None,
+        prefetch_related: str | list[str] | None = None,
+        **kwargs: Any
+    ) -> list[_ModelT]:
+        query = self._model.filter(*args, **kwargs)
+
+        # Handle select_related (JOIN-based loading)
+        if select_related:
+            if isinstance(select_related, str):
+                select_related = [select_related]
+            query = query.select_related(*select_related)
+
+        # Handle prefetch_related (additional query loading)
+        if prefetch_related:
+            if isinstance(prefetch_related, str):
+                prefetch_related = [prefetch_related]
+            query = query.prefetch_related(*prefetch_related)
+
+        return await query.all()
 
     async def first(self, **kwargs: Any) -> list[_ModelT]:
-        return await self.model.filter(**kwargs).first()
+        return await self._model.filter(**kwargs).first()
+
+    async def filter_existing_ids(self, ids: list[uuid.UUID]) -> list[uuid.UUID]:
+        return await self._model.filter(id__in=ids).values_list("id", flat=True)
 
     async def get_or_create(self, **defaults: Any) -> tuple[_ModelT, bool]:
-        return await self.model.get_or_create(**defaults)
+        return await self._model.get_or_create(**defaults)
 
     async def create(self, **kwargs: Any) -> _ModelT:
-        return await self.model.create(**kwargs)
+        return await self._model.create(**kwargs)
+
+    async def bulk_create(
+        self,
+        objects: Iterable[_ModelT | dict[str, Any]],
+        ignore_conflicts: bool = False
+    ) -> list[_ModelT]:
+
+        if isinstance(next(iter(objects)), dict):
+            model_instances = [self._model(**obj) for obj in objects]  # type: ignore
+        else:
+            model_instances = list(objects)
+
+        await self._model.bulk_create(
+            model_instances,
+            ignore_conflicts=ignore_conflicts
+        )
+
+        return model_instances
 
     async def update(self, instance: _ModelT, **kwargs: Any) -> _ModelT | None:
         for attr, value in kwargs.items():
@@ -96,6 +189,9 @@ class BaseRepo(Generic[_ModelT]):
             await instance.delete()
             return True
         return False
+
+    async def delete_by_filter(self, *args: Any, **kwargs: Any) -> int:
+        return await self._model.filter(*args, **kwargs).delete()
 
 
 # schema - request + response + validation

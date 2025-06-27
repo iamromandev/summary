@@ -9,11 +9,11 @@ class UrlRepo(BaseRepo[Url]):
         super().__init__(Url)
 
     async def create_or_update(
-        self, url: str, base: str | None,
+        self, url: str, base_url: str | None,
         defaults: dict = None, **kwargs: Any
     ) -> Url:
-        url_obj, created = await self.model.get_or_create(
-            url=url, base=base, defaults=defaults or {}
+        url_obj, created = await self._model.get_or_create(
+            url=url, base_url=base_url, defaults=defaults or {}
         )
         if not created and kwargs:
             for attr, value in kwargs.items():
