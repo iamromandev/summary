@@ -9,7 +9,7 @@ async def upgrade(db: BaseDBAsyncClient) -> str:
     `updated_at` DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
     `deleted_at` DATETIME(6),
     `url` VARCHAR(2048) NOT NULL UNIQUE,
-    `base` VARCHAR(2048),
+    `base_url` VARCHAR(2048),
     `title` VARCHAR(256)
 ) CHARACTER SET utf8mb4 COMMENT='Url';"""
 

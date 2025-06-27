@@ -13,8 +13,7 @@ from src.routes.health import health_router
 
 @asynccontextmanager
 async def lifespan(fa: FastAPI):
-    if not settings.is_prod:
-        await run_migrations()
+    await run_migrations()
     yield  # startup complete
     # any shutdown code here
 
