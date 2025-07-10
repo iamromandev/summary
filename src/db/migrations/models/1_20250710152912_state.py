@@ -10,7 +10,7 @@ async def upgrade(db: BaseDBAsyncClient) -> str:
     `deleted_at` DATETIME(6),
     `ref` CHAR(36) NOT NULL,
     `state` VARCHAR(32) NOT NULL,
-    `extra` VARCHAR(32),
+    `extra` JSON,
     UNIQUE KEY `uid_state_ref_7c8a8b` (`ref`, `state`)
 ) CHARACTER SET utf8mb4 COMMENT='State';"""
 

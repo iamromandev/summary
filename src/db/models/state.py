@@ -9,7 +9,7 @@ from src.core.base import Base
 class State(Base):
     ref: uuid.UUID = fields.UUIDField(null=False)
     state: str = fields.CharField(max_length=32, null=False)
-    extra: str | None = fields.CharField(max_length=32, null=True)
+    extra: dict | list | None = fields.JSONField(null=True)
 
     class Meta:
         ordering = ["ref", "state"]

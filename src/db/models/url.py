@@ -18,4 +18,4 @@ class Url(Base):
         table_description = "Url"
 
     def __str__(self) -> str:
-        return str(self.url)
+        return f"[Url: url - {self.url}, base_url - {self.base_url}, title - {self.title}]"

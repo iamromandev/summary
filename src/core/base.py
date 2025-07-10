@@ -1,30 +1,23 @@
 import uuid
-from abc import ABC, abstractmethod
 from collections.abc import Iterable, Sequence
-from dataclasses import dataclass
-from dataclasses import field as DCField
 from datetime import UTC, datetime
 from functools import cached_property
 from typing import Annotated, Any, Generic, TypeVar
 
 from fastapi.encoders import jsonable_encoder
-from fastapi.responses import JSONResponse
 from loguru import logger
 from pydantic import BaseModel, ConfigDict, Field
 from tortoise import fields, models, queryset
-
-from .formats import utc_iso_timestamp
-from .types import Code, Status
 
 # database - mode + repo
 _ModelT = TypeVar("_ModelT", bound=models.Model)
 
 
 class Base(models.Model):
-    id = fields.UUIDField(pk=True, default=uuid.uuid4)
-    created_at = fields.DatetimeField(auto_now_add=True)
-    updated_at = fields.DatetimeField(auto_now=True)
-    deleted_at = fields.DatetimeField(null=True)
+    id: uuid.UUID = fields.UUIDField(pk=True, default=uuid.uuid4)
+    created_at: datetime = fields.DatetimeField(auto_now_add=True)
+    updated_at: datetime = fields.DatetimeField(auto_now=True)
+    deleted_at: datetime | None = fields.DatetimeField(null=True)
 
     class Meta:
         abstract = True
@@ -71,15 +64,41 @@ class BaseRepo(Generic[_ModelT]):
 
         return await query.first()
 
-    async def get_all(
+    async def all_ids(
         self,
+        *args: Any,
+        ids: list[uuid.UUID] | None = None,
+        field_name_for_ids: str | None = None,
         sort: str | None = None,
-        page: int = 1,
-        page_size: int = 10,
+        **kwargs: Any,
+    ) -> list[uuid.UUID]:
+        query: queryset.QuerySet[_ModelT] = self._model.filter(*args, **kwargs)
+
+        if ids and field_name_for_ids:
+            query = query.filter(**{f"{field_name_for_ids}__in": ids})
+
+        if sort:
+            order_fields = [field.strip() for field in sort.split(",")]
+            query = query.order_by(*order_fields)
+
+        return await query.values_list("id", flat=True)
+
+    async def all(
+        self,
+        *args: Any,
+        ids: list[uuid.UUID] | None = None,
+        field_name_for_ids: str | None = None,
+        sort: str | None = None,
         select_related: str | Sequence[str] | None = None,
         prefetch_related: str | Sequence[str] | None = None,
-    ) -> tuple[list[_ModelT], dict[str, int]]:
-        query: queryset.QuerySet[_ModelT] = self._model.all()
+        annotations: dict[str, Any] | None = None,
+        **kwargs: Any
+    ) -> list[_ModelT]:
+        query: queryset.QuerySet[_ModelT] = self._model.filter(*args, **kwargs)
+
+        # Filter by IDs if provided
+        if ids and field_name_for_ids:
+            query = query.filter(**{f"{field_name_for_ids}__in": ids})
 
         # Apply select_related (JOINs)
         if select_related:
@@ -93,17 +112,61 @@ class BaseRepo(Generic[_ModelT]):
                 prefetch_related = [prefetch_related]
             query = query.prefetch_related(*prefetch_related)
 
+        # Apply annotations (like Count)
+        if annotations:
+            query = query.annotate(**annotations)
+
         # Sorting
         if sort:
             order_fields = [field.strip() for field in sort.split(",")]
             query = query.order_by(*order_fields)
 
-        # Pagination metadata
-        total = await query.count()
-        offset = (page - 1) * page_size
-        results = await query.offset(offset).limit(page_size)
+        # Return all results
+        return await query
 
-        meta = {
+    async def exists(self, **kwargs: Any) -> bool:
+        return await self._model.filter(**kwargs).exists()
+
+    async def filter(
+        self,
+        *args: Any,
+        ids: list[uuid.UUID] | None = None,
+        field_name_for_ids: str | None = None,
+        select_related: str | list[str] | None = None,
+        prefetch_related: str | list[str] | None = None,
+        annotations: dict[str, Any] | None = None,
+        sort: str | None = None,
+        page: int = 1,
+        page_size: int = 10,
+        **kwargs: Any
+    ) -> tuple[list[_ModelT], dict[str, int]]:
+        query: queryset.QuerySet[_ModelT] = self._model.filter(*args, **kwargs)
+
+        if ids and field_name_for_ids:
+            query = query.filter(**{f"{field_name_for_ids}__in": ids})
+
+        if select_related:
+            if isinstance(select_related, str):
+                select_related = [select_related]
+            query = query.select_related(*select_related)
+
+        if prefetch_related:
+            if isinstance(prefetch_related, str):
+                prefetch_related = [prefetch_related]
+            query = query.prefetch_related(*prefetch_related)
+
+        if annotations:
+            query = query.annotate(**annotations)
+
+        if sort:
+            order_fields = [field.strip() for field in sort.split(",")]
+            query = query.order_by(*order_fields)
+
+        total: int = await query.count()
+        offset: int = (page - 1) * page_size
+        results: list[_ModelT] = await query.offset(offset).limit(page_size)
+
+        meta: dict[str, int] = {
             "page": page,
             "page_size": page_size,
             "total": total,
@@ -112,34 +175,19 @@ class BaseRepo(Generic[_ModelT]):
 
         return results, meta
 
-    async def exists(self, **kwargs: Any) -> bool:
-        return await self._model.filter(**kwargs).exists()
-
-    async def filter(
+    async def first(
         self,
         *args: Any,
-        select_related: str | list[str] | None = None,
-        prefetch_related: str | list[str] | None = None,
+        ids: list[uuid.UUID] | None = None,
+        field_name_for_ids: str | None = None,
         **kwargs: Any
-    ) -> list[_ModelT]:
+    ) -> _ModelT | None:
         query = self._model.filter(*args, **kwargs)
 
-        # Handle select_related (JOIN-based loading)
-        if select_related:
-            if isinstance(select_related, str):
-                select_related = [select_related]
-            query = query.select_related(*select_related)
+        if ids and field_name_for_ids:
+            query = query.filter(**{f"{field_name_for_ids}__in": ids})
 
-        # Handle prefetch_related (additional query loading)
-        if prefetch_related:
-            if isinstance(prefetch_related, str):
-                prefetch_related = [prefetch_related]
-            query = query.prefetch_related(*prefetch_related)
-
-        return await query.all()
-
-    async def first(self, **kwargs: Any) -> list[_ModelT]:
-        return await self._model.filter(**kwargs).first()
+        return await query.first()
 
     async def filter_existing_ids(self, ids: list[uuid.UUID]) -> list[uuid.UUID]:
         return await self._model.filter(id__in=ids).values_list("id", flat=True)
@@ -237,39 +285,11 @@ class BaseSchema(BaseModel):
         logger.info(f"{self._tag}|log(): {data}")
 
 
-# response
-_DataT = TypeVar("_DataT", bound=BaseSchema)
-
-
-@dataclass
-class Response(ABC, Generic[_DataT]):
-    status: Annotated[Status, Field(default=Status.SUCCESS)] = Status.SUCCESS
-    code: Annotated[Code, Field(default=Code.OK)] = Code.OK
-    data: Annotated[BaseSchema | list[BaseSchema] | Any, Field(default=None)] = None
-    message: Annotated[str | None, Field(default=None)] = None
-    timestamp: Annotated[str, Field(...)] = DCField(default_factory=lambda: utc_iso_timestamp())
-
-    @cached_property
-    def _tag(self) -> str:
-        return self.__class__.__name__
-
-    @abstractmethod
-    def to_json(self) -> Any:
-        pass
-
-    def to_resp(self) -> JSONResponse:
-        return JSONResponse(
-            content=self.to_json(),
-            status_code=self.code.value,
-        )
-
-
 # service
 class BaseService:
-    _cache_client: Annotated[Any, Field(...)]
 
-    def __init__(self, cache_client: Any) -> None:
-        self._cache_client = cache_client
+    def __init__(self) -> None:
+        pass
 
     @cached_property
     def _tag(self) -> str:

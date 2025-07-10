@@ -7,9 +7,11 @@ from src.schemas.health import HealthSchema
 
 
 class HealthService(BaseService):
+    _cache_client: CacheClient
 
     def __init__(self, cache_client: CacheClient) -> None:
-        super().__init__(cache_client)
+        super().__init__()
+        self._cache_client = cache_client
 
     async def check_health(self) -> HealthSchema:
         app_version = get_app_version()

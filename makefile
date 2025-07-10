@@ -5,7 +5,7 @@ clean-system:
 
 .PHONY: clean-db
 clean-db:
-	docker volume prune --all --force
+	docker compose down -v
 
 .PHONY: clean
 clean:

@@ -1,14 +1,18 @@
 from tortoise import fields
 
 from src.core.base import Base
-from src.db.models import Url
+
+from .url import Url
 
 
 class Raw(Base):
     url: fields.ForeignKeyRelation["Url"] = fields.ForeignKeyField(
-        model_name="models.Url", related_name="raws", on_delete=fields.CASCADE
+        model_name="models.Url",
+        related_name="raws",
+        on_delete=fields.CASCADE
     )
-    html = fields.TextField(null=False, description="HTML content of the raw data")
+    html: str | None = fields.TextField(null=True)
+    meta: dict | list | None = fields.JSONField(null=True)
 
     class Meta:
         ordering = ["-created_at"]
