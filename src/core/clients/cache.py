@@ -1,7 +1,8 @@
+from functools import cached_property
 from typing import Annotated, Any
 
 import redis.asyncio as redis
-from pydantic import Field
+from pydantic import Field, RedisDsn
 
 from src.core.factory import SingletonMeta
 
@@ -10,7 +11,7 @@ class CacheClient(metaclass=SingletonMeta):
     _initialized: Annotated[bool, Field(default=False)] = False
     _cache: Annotated[redis.Redis, Field(...)]
 
-    def __init__(self, cache_url: Annotated[str, Field(...)]) -> None:
+    def __init__(self, cache_url: Annotated[RedisDsn, Field(...)]) -> None:
         if self._initialized:
             return
         self._cache = redis.from_url(
@@ -18,6 +19,10 @@ class CacheClient(metaclass=SingletonMeta):
             decode_responses=True
         )
         self._initialized = True
+
+    @cached_property
+    def _tag(self) -> str:
+        return self.__class__.__name__
 
     async def ping(self) -> Any:
         return await self._cache.ping()

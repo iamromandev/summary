@@ -38,6 +38,7 @@ ENV WORK_DIR=$WORK_DIR
 ENV INSTALL_DIR=$INSTALL_DIR
 ENV PW_DIR=$PW_DIR
 
+
 # install uv
 RUN pip install --upgrade pip
 RUN pip install uv
@@ -51,6 +52,7 @@ RUN uv venv
 
 # install runtime deps
 RUN uv pip install -r $INSTALL_DIR/pyproject.toml
+#RUN playwright install --with-deps chromium
 
 
 ### local image ###
@@ -69,5 +71,6 @@ ENV PW_DIR=$PW_DIR
 WORKDIR $WORK_DIR
 
 COPY --from=builder $INSTALL_DIR $INSTALL_DIR
+#COPY --from=builder /root/.cache/ms-playwright /root/.cache/ms-playwright
 COPY . $WORK_DIR
-#RUN playwright install --with-deps chromium
+RUN playwright install --with-deps chromium

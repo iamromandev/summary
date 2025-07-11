@@ -2,20 +2,26 @@ from collections.abc import AsyncGenerator
 
 from fastapi import Depends
 
-from src.core.clients import CacheClient, get_cache
-from src.repos import UrlRepo, get_url_repo
+from src.core.clients import CacheClient, PlaywrightClient, get_cache_client, get_playwright_client
+from src.repos import RawRepo, UrlRepo, get_raw_repo, get_url_repo
 
 from .extract import ExtractService
 from .health import HealthService
 
 
 async def get_health_service(
-    cache_client: CacheClient = Depends(get_cache)
+    cache_client: CacheClient = Depends(get_cache_client)
 ) -> AsyncGenerator[HealthService]:
     yield HealthService(cache_client)
 
 
 async def get_extract_service(
-    url_repo: UrlRepo = Depends(get_url_repo)
+    playwright_client: PlaywrightClient = Depends(get_playwright_client),
+    url_repo: UrlRepo = Depends(get_url_repo),
+    raw_repo: RawRepo = Depends(get_raw_repo)
 ) -> AsyncGenerator[ExtractService]:
-    yield ExtractService(url_repo)
+    yield ExtractService(
+        playwright_client,
+        url_repo,
+        raw_repo
+    )

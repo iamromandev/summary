@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from src.core.base import BaseRepo
@@ -15,7 +15,7 @@ class RawRepo(BaseRepo[Raw]):
         latest_raw = await self._model.filter(url=url).order_by("-updated_at").first()
 
         if latest_raw:
-            time_diff = datetime.utcnow() - latest_raw.updated_at.replace(tzinfo=None)
+            time_diff = datetime.now(UTC) - latest_raw.updated_at.astimezone(UTC)
             if time_diff >= timedelta(weeks=1):
                 latest_raw.html = html
                 for attr, value in kwargs.items():

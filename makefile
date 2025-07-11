@@ -2,10 +2,12 @@
 .PHONY: clean-system
 clean-system:
 	docker system prune -a --force
+	docker buildx prune --all --force
+	docker builder prune --all --force
 
 .PHONY: clean-db
 clean-db:
-	docker compose down -v
+	docker volume prune --all --force
 
 .PHONY: clean
 clean:

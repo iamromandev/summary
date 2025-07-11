@@ -41,6 +41,34 @@ services:
       timeout: 3s
       retries: 3
 
+  #  playwright:
+  #    platform: linux/arm64
+  #    image: mcr.microsoft.com/playwright/python:v1.53.0-noble
+  #    hostname: playwright
+  #    container_name: playwright
+  #    restart: unless-stopped
+  #    ports:
+  #      - "9222:9222"
+  #    environment:
+  #      - PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+  #    networks:
+  #      - playwright
+  #      - server
+  #    command: >
+  #      bash -c "
+  #          pip install --upgrade pip &&
+  #          pip install --no-cache-dir playwright==1.53.0 &&
+  #          playwright install --with-deps chromium &&
+  #          python -c '
+  #              import sys
+  #              from playwright.sync_api import sync_playwright
+  #              with sync_playwright() as p:
+  #                  server = p.chromium.launch_server(port=9222)
+  #                  print(server.ws_endpoint)
+  #                  server.wait_for_exit()
+  #          '
+  #        "
+
   server:
     platform: linux/arm64
     hostname: server
@@ -59,12 +87,10 @@ services:
       - "8000:8000"
     volumes:
       - .:/workdir
-    links:
-      - db
-      - cache
     networks:
       - db
       - cache
+      - playwright
       - server
     depends_on:
       db:
@@ -96,6 +122,9 @@ networks:
     driver: bridge
   cache:
     name: cache
+    driver: bridge
+  playwright:
+    name: playwright
     driver: bridge
   server:
     name: server

@@ -1,6 +1,7 @@
 from functools import cached_property
+from urllib.parse import quote_plus
 
-from pydantic import Field
+from pydantic import Field, RedisDsn, WebsocketUrl
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from .types import Env
@@ -18,8 +19,17 @@ class Settings(BaseSettings):
     db_password: str = Field(...)
     db_root_password: str = Field(...)
     # cache
-    redis_host: str = Field(...)
-    redis_port: int = Field(...)
+    cache_connection: str = Field(...)
+    cache_host: str = Field(...)
+    cache_port: int = Field(...)
+    cache_user: str = Field(...)
+    cache_password: str = Field(...)
+    # playwright
+    playwright_connection: str = Field(...)
+    playwright_host: str = Field(...)
+    playwright_port: int = Field(...)
+    playwright_headless: bool = Field(...)
+    playwright_user_agent: str = Field(...)
 
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -27,7 +37,11 @@ class Settings(BaseSettings):
         extra="allow"
     )
 
-    @property
+    @cached_property
+    def is_local(self) -> bool:
+        return self.env == Env.LOCAL
+
+    @cached_property
     def is_prod(self) -> bool:
         return self.env == Env.PROD
 
@@ -36,8 +50,28 @@ class Settings(BaseSettings):
         return f"{self.db_connection}://{self.db_user}:{self.db_password}@{self.db_host}:{self.db_port}/{self.db_name}"
 
     @cached_property
-    def cache_url(self) -> str:
-        return f"redis://{settings.redis_host}:{settings.redis_port}/0"
+    def cache_url(self) -> RedisDsn:
+        if self.is_local:
+            return RedisDsn.build(
+                scheme=self.cache_connection,
+                host=self.cache_host,
+                port=self.cache_port,
+            )
+        return RedisDsn.build(
+            scheme=self.cache_connection,
+            host=self.cache_host,
+            port=self.cache_port,
+            username=self.cache_user,
+            password=quote_plus(self.cache_password),
+        )
+
+    @cached_property
+    def playwright_url(self) -> WebsocketUrl:
+        return WebsocketUrl.build(
+            scheme=self.playwright_connection,
+            host=self.playwright_host,
+            port=self.playwright_port,
+        )
 
 
 settings = Settings()

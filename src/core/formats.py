@@ -3,7 +3,7 @@ from datetime import UTC, date, datetime, time
 from enum import Enum
 from typing import Any
 
-from pydantic import BaseModel, HttpUrl
+from pydantic import BaseModel, HttpUrl, RedisDsn, SecretStr, WebsocketUrl
 
 
 def exclude_empty(data: dict) -> dict:
@@ -14,8 +14,15 @@ def utc_iso_timestamp() -> str:
     return datetime.now(UTC).isoformat().replace("+00:00", "Z")
 
 
-def serialize(obj: Any) -> Any:
-    if isinstance(obj, BaseModel):
+def serialize(obj: Any, instructions: dict[type, type] | None = None) -> Any:
+    if instructions:
+        for key, value in instructions.items():
+            if isinstance(obj, key):
+                return value(obj)
+
+    if isinstance(obj, HttpUrl | RedisDsn | WebsocketUrl):
+        return str(obj).strip("/")
+    elif isinstance(obj, BaseModel):
         return serialize(obj.model_dump())
 
     elif isinstance(obj, dict):
@@ -30,7 +37,7 @@ def serialize(obj: Any) -> Any:
     elif isinstance(obj, datetime | date | time):
         return obj.isoformat()
 
-    elif isinstance(obj, uuid.UUID | HttpUrl):
+    elif isinstance(obj, uuid.UUID | SecretStr):
         return str(obj)
 
     elif hasattr(obj, "__dict__"):

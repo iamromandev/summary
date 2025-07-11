@@ -5,23 +5,24 @@ from urllib.parse import urlparse
 
 import redis.asyncio as redis
 import toml
-from pydantic import Field
+from pydantic import Field, HttpUrl
 
 from src.core.clients import CacheClient
+from src.core.formats import serialize
 
 
-def get_base_url(url: str) -> str:
+def get_base_url(url: HttpUrl) -> HttpUrl:
     """
     Extracts the base URL from a given URL.
 
     Parameters:
-        url (str): The full URL.
+        url (HttpUrl): The full URL.
 
     Returns:
-        str: The base URL (scheme + domain).
+        HttpUrl: The base URL (scheme + domain).
     """
-    parsed_url = urlparse(url)
-    return f"{parsed_url.scheme}://{parsed_url.netloc}"
+    parsed_url = urlparse(serialize(url))
+    return HttpUrl.build(scheme=parsed_url.scheme, host=parsed_url.netloc, port=parsed_url.port, path="")
 
 
 def get_app_version() -> str:
