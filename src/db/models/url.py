@@ -9,7 +9,7 @@ class Url(Base):
     url: str = fields.CharField(
         max_length=2048, unique=True, null=False, validators=[UrlValidator()]
     )
-    base: str | None = fields.CharField(max_length=2048, null=True)
+    base_url: str | None = fields.CharField(max_length=2048, null=True)
     title: str | None = fields.CharField(max_length=256, null=True)
 
     class Meta:
@@ -18,4 +18,4 @@ class Url(Base):
         table_description = "Url"
 
     def __str__(self) -> str:
-        return str(self.url)
+        return f"[Url: url - {self.url}, base_url - {self.base_url}, title - {self.title}]"

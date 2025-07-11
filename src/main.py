@@ -13,8 +13,7 @@ from src.routes.health import health_router
 
 @asynccontextmanager
 async def lifespan(fa: FastAPI):
-    if not settings.is_prod:
-        await run_migrations()
+    await run_migrations()
     yield  # startup complete
     # any shutdown code here
 
@@ -40,7 +39,7 @@ init_db(app)
 app.include_router(health_router)
 app.include_router(etl_router)
 
-if __name__ == "__main__":
-    import uvicorn
-
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+# if __name__ == "__main__":
+#     import uvicorn
+#
+#     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

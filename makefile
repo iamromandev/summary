@@ -2,6 +2,8 @@
 .PHONY: clean-system
 clean-system:
 	docker system prune -a --force
+	docker buildx prune --all --force
+	docker builder prune --all --force
 
 .PHONY: clean-db
 clean-db:
@@ -63,3 +65,7 @@ run:
 export:
 	make ruff
 	uv export --format requirements-txt > requirements.txt
+
+.PHONY: git add .
+add:
+	git add .
