@@ -123,4 +123,5 @@ class PlaywrightClient(BaseMixin, metaclass=SingletonMeta):
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
+        logger.debug(f"{self._tag}|__aexit__()")
         await self.close()

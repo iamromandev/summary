@@ -26,24 +26,11 @@ class ExtractService(BaseService):
         self._url_repo = url_repo
         self._raw_repo = raw_repo
 
-    # async def extract_urls(self, url: HttpUrl) -> list[str] | None:
-    #     async with PlaywrightClient() as pc:
-    #         extracted_urls: list[str] | None = await pc.get_urls(url)
-    #         logger.debug(f"{self._tag}|extract_urls(): Extracted URLs: {extracted_urls}")
-    #         for extracted_url in extracted_urls or []:
-    #             try:
-    #                 url_obj: Url = await  self._url_repo.create_or_update(
-    #                     url=extracted_url,
-    #                     base_url=common.get_base_url(extracted_url)
-    #                 )
-    #                 logger.debug(f"{self._tag}|extract_urls(): URL saved: {url_obj}")
-    #             except ValidationError as error:
-    #                 logger.error(f"{self._tag}|extract_urls(): Validation error: {error}")
-    #         return extracted_urls
-
     async def extract(self, url: HttpUrl) -> None:
         logger.debug(f"{self._tag}|extract(): Starting extraction for {url}")
-
+        db_url_exists: bool = await self._url_repo.exists(url=serialize(url))
+        if db_url_exists:
+            return
         db_url: Url = await  self._url_repo.create_or_update(
             url=serialize(url),
             base_url=serialize(common.get_base_url(url))
@@ -53,7 +40,10 @@ class ExtractService(BaseService):
         html: str = await self._playwright_client.get_html(url)
         raw: Raw = await  self._raw_repo.create_or_update(
             url=db_url,
-            html=html
+            html=html,
+            meta={
+                "size": len(html.encode("utf-8")),
+            }
         )
         logger.debug(f"{self._tag}|extract(): Raw HTML saved: {raw}")
 

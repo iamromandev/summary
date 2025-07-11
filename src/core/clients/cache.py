@@ -5,6 +5,7 @@ import redis.asyncio as redis
 from pydantic import Field, RedisDsn
 
 from src.core.factory import SingletonMeta
+from src.core.formats import serialize
 
 
 class CacheClient(metaclass=SingletonMeta):
@@ -15,7 +16,7 @@ class CacheClient(metaclass=SingletonMeta):
         if self._initialized:
             return
         self._cache = redis.from_url(
-            cache_url,
+            serialize(cache_url),
             decode_responses=True
         )
         self._initialized = True
