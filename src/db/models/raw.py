@@ -11,8 +11,8 @@ class Raw(Base):
         related_name="raws",
         on_delete=fields.CASCADE
     )
-    html: str | None = fields.TextField(null=True)
-    meta: dict | list | None = fields.JSONField(null=True)
+    html: fields.TextField = fields.TextField(null=True)
+    meta: fields.JSONField[dict | list | None] = fields.JSONField(null=True)
 
     class Meta:
         ordering = ["-created_at"]

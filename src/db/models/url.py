@@ -1,4 +1,3 @@
-
 from tortoise import fields
 
 from src.core.base import Base
@@ -6,11 +5,11 @@ from src.db.validators import UrlValidator
 
 
 class Url(Base):
-    url: str = fields.CharField(
+    url: fields.CharField = fields.CharField(
         max_length=2048, unique=True, null=False, validators=[UrlValidator()]
     )
-    base_url: str | None = fields.CharField(max_length=2048, null=True)
-    title: str | None = fields.CharField(max_length=256, null=True)
+    base_url: fields.CharField = fields.CharField(max_length=2048, null=True)
+    title: fields.CharField = fields.CharField(max_length=256, null=True)
 
     class Meta:
         ordering = ["url"]
