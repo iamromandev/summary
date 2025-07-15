@@ -62,7 +62,7 @@ class ExtractService(BaseService):
         # Task exists — check if it's NEW or expired
         return db_url, db_task, db_task.state == State.NEW or db_task.is_expired(delay_s)
 
-    async def _find_next_url_task(self) -> tuple[Url, Task] | None:
+    async def _find_next_url_task(self) -> tuple[Url | None, Task | None]:
         # Step 1: Get all tasks with state NEW and ref_type URL
         next_task = await self._task_repo.first(
             ref_type=ModelType.URL,
@@ -76,8 +76,10 @@ class ExtractService(BaseService):
                 updated_at__lt=expire_threshold,
                 sort="updated_at"
             )
+            if next_task:
+                logger.debug(f"{self._tag}|_find_next_url_task()|expired: {next_task.id}")
 
-        return (await self._url_repo.get_by_pk(next_task.ref), next_task) if next_task else None
+        return (await self._url_repo.get_by_pk(next_task.ref), next_task) if next_task else None, None
 
     async def _store_new_extracted_urls(self, urls: list[HttpUrl]) -> None:
         for extracted_url in urls:
