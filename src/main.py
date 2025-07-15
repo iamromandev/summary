@@ -7,7 +7,7 @@ from src.core.common import get_app_version
 from src.core.config import settings
 from src.core.error import config_global_errors
 from src.db import init_db, run_migrations
-from src.routes import etl_router
+from src.routes.crawl import crawl_router
 from src.routes.health import health_router
 
 
@@ -37,7 +37,7 @@ config_global_errors(app)
 init_db(app)
 
 app.include_router(health_router)
-app.include_router(etl_router)
+app.include_router(crawl_router)
 
 # if __name__ == "__main__":
 #     import uvicorn
