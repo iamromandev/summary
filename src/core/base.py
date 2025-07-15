@@ -8,6 +8,7 @@ from fastapi.encoders import jsonable_encoder
 from loguru import logger
 from pydantic import BaseModel, ConfigDict, Field
 from tortoise import fields, models, queryset
+from tortoise.exceptions import DoesNotExist
 
 # database - mode + repo
 _ModelT = TypeVar("_ModelT", bound=models.Model)
@@ -41,6 +42,12 @@ class BaseRepo(Generic[_ModelT]):
     @cached_property
     def _tag(self) -> str:
         return self.__class__.__name__
+
+    async def get_or_none(self, **kwargs: Any) -> _ModelT | None:
+        try:
+            return await self._model.get(**kwargs)
+        except DoesNotExist:
+            return None
 
     async def get_by_pk(
         self,
@@ -180,6 +187,9 @@ class BaseRepo(Generic[_ModelT]):
         *args: Any,
         ids: list[uuid.UUID] | None = None,
         field_name_for_ids: str | None = None,
+        sort: str | None = None,
+        select_related: str | list[str] | None = None,
+        prefetch_related: str | list[str] | None = None,
         **kwargs: Any
     ) -> _ModelT | None:
         query = self._model.filter(*args, **kwargs)
@@ -187,13 +197,27 @@ class BaseRepo(Generic[_ModelT]):
         if ids and field_name_for_ids:
             query = query.filter(**{f"{field_name_for_ids}__in": ids})
 
+        if select_related:
+            if isinstance(select_related, str):
+                select_related = [select_related]
+            query = query.select_related(*select_related)
+
+        if prefetch_related:
+            if isinstance(prefetch_related, str):
+                prefetch_related = [prefetch_related]
+            query = query.prefetch_related(*prefetch_related)
+
+        if sort:
+            order_fields = [field.strip() for field in sort.split(",")]
+            query = query.order_by(*order_fields)
+
         return await query.first()
 
     async def filter_existing_ids(self, ids: list[uuid.UUID]) -> list[uuid.UUID]:
         return await self._model.filter(id__in=ids).values_list("id", flat=True)
 
-    async def get_or_create(self, **defaults: Any) -> tuple[_ModelT, bool]:
-        return await self._model.get_or_create(**defaults)
+    async def get_or_create(self, **kwargs: Any) -> tuple[_ModelT, bool]:
+        return await self._model.get_or_create(**kwargs)
 
     async def create(self, **kwargs: Any) -> _ModelT:
         return await self._model.create(**kwargs)

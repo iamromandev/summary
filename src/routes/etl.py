@@ -18,5 +18,5 @@ async def etl(
     bt: BackgroundTasks,
 ) -> JSONResponse:
     logger.debug(f"Running ETL {WEB_URL}")
-    bt.add_task(extract_service.extract, WEB_URL)
+    bt.add_task(extract_service.crawl, WEB_URL)
     return Success.ok().to_resp()

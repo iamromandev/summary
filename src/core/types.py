@@ -1,6 +1,6 @@
 import json
-from enum import Enum
-from typing import Any
+from enum import Enum, StrEnum
+from typing import Any, Self
 
 from fastapi import status
 
@@ -206,6 +206,7 @@ class ErrorType(BaseEnum):
     EMAIL_SEND_FAILED = "email_send_failed"
     NOTIFICATION_ERROR = "notification_error"
 
+
 class ContentType(str, Enum):
     PDF = "application/pdf"
     TEXT = "text/plain"
@@ -226,3 +227,94 @@ class ContentType(str, Enum):
     PPTX = "application/vnd.openxmlformats-officedocument.presentationml.presentation"
     ZIP = "application/zip"
     RTF = "application/rtf"
+
+
+class ModelType(StrEnum):
+    URL = "url"
+    RAW = "raw"
+    OTHER = "other"
+
+    @classmethod
+    def value_of(cls, value: str) -> Self:
+        try:
+            return cls(value)
+        except ValueError:
+            return cls.OTHER
+
+class Action(StrEnum):
+    CREATE = "create"
+    READ = "read"
+    UPDATE = "update"
+    DELETE = "delete"
+
+    FETCH = "fetch"
+    CRAWL = "crawl"
+    PARSE = "parse"
+    EXTRACT = "extract"
+    TRANSFORM = "transform"
+    LOAD = "load"
+
+    TRAIN = "train"
+    EVALUATE = "evaluate"
+    INFER = "infer"
+    PREDICT = "predict"
+    VALIDATE = "validate"
+
+    START = "start"
+    STOP = "stop"
+    RESTART = "restart"
+    RETRY = "retry"
+    CANCEL = "cancel"
+    SCHEDULE = "schedule"
+
+    EXPORT = "export"
+    IMPORT = "import"
+    BACKUP = "backup"
+    RESTORE = "restore"
+
+    NOTIFY = "notify"
+    LOG = "log"
+    MONITOR = "monitor"
+    ARCHIVE = "archive"
+    CLEANUP = "cleanup"
+
+    UNKNOWN = "unknown"
+
+    @classmethod
+    def value_of(cls, value: str) -> Self:
+        try:
+            return cls(value.lower())
+        except ValueError:
+            return cls.UNKNOWN
+
+
+class State(StrEnum):
+    NEW = "new"                    # Just created, not started yet
+    PENDING = "pending"            # Waiting for a resource or dependency
+    QUEUED = "queued"              # In queue, scheduled to be processed
+    SCHEDULED = "scheduled"        # Assigned for future execution
+    INITIALIZING = "initializing"  # Starting up, loading resources
+    RUNNING = "running"            # Actively processing
+    PROCESSING = "processing"      # Similar to running, used for data
+    VALIDATING = "validating"      # Checking constraints, formats
+    COMPLETED = "completed"        # Finished all operations
+    SUCCESS = "success"            # Completed successfully
+    FAILED = "failed"              # Failed during execution
+    RETRY = "retry"                # Scheduled to retry after failure
+    TIMEOUT = "timeout"            # Exceeded allowed time limit
+    SKIPPED = "skipped"            # Intentionally not executed
+    CANCELED = "canceled"          # Manually or automatically canceled
+    DEFERRED = "deferred"          # Postponed due to unmet conditions
+    BLOCKED = "blocked"            # Cannot proceed due to external issue
+    INTERRUPTED = "interrupted"    # Unexpectedly halted
+    STALE = "stale"                # Too old or irrelevant to continue
+    ARCHIVED = "archived"          # Marked for long-term storage
+    EXPIRED = "expired"            # Reached its end of validity
+    UNKNOWN = "unknown"            # Unrecognized or default fallback
+
+    @classmethod
+    def value_of(cls, value: str) -> Self:
+        try:
+            return cls(value.lower())
+        except ValueError:
+            return cls.UNKNOWN

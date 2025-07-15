@@ -27,3 +27,4 @@ EXCEPTION_ERROR_TYPE_MAP: dict[type[Exception], ErrorType] = {
     FileNotFoundError: ErrorType.FILE_NOT_FOUND,
     NotImplementedError: ErrorType.NOT_IMPLEMENTED,
 }
+

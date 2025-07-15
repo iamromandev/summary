@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "summary"
-version = "0.0.2"
+version = "0.0.3"
 description = "Summary application to summarize the scraped data"
 authors = [
     { name = "Roman", email = "iamromandev@gmail.com" },
