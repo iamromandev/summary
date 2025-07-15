@@ -6,17 +6,17 @@ from loguru import logger
 
 from src.core.constants import WEB_URL
 from src.core.success import Success
-from src.services import get_extract_service
-from src.services.extract import ExtractService
+from src.services import get_crawl_service
+from src.services.crawl import CrawlService
 
-router = APIRouter(prefix="/etl", tags=["etl"])
+router = APIRouter(prefix="/crawl", tags=["crawl"])
 
 
 @router.post(path="")
 async def etl(
-    extract_service: Annotated[ExtractService, Depends(get_extract_service)],
+    service: Annotated[CrawlService, Depends(get_crawl_service)],
     bt: BackgroundTasks,
 ) -> JSONResponse:
-    logger.debug(f"Running ETL {WEB_URL}")
-    bt.add_task(extract_service.crawl, WEB_URL)
+    logger.debug(f"Running crawl {WEB_URL}")
+    bt.add_task(service.crawl, WEB_URL)
     return Success.ok().to_resp()

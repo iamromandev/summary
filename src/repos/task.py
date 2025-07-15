@@ -5,7 +5,7 @@ from typing import Any
 from loguru import logger
 
 from src.core.base import BaseRepo
-from src.core.types import ModelType
+from src.core.types import ModelType, State
 from src.db.models import Task
 
 
@@ -29,17 +29,25 @@ class TaskRepo(BaseRepo[Task]):
             await obj.save()
         return obj
 
+    async def get_first_by_states(
+        self, ref_type: ModelType, states: list[State]) -> Task | None:
+        return await self.first(
+            ref_type=ref_type,
+            state__in=states,
+            sort="updated_at"
+        )
+
     async def get_first_expired(
         self,
         ref_type: ModelType,
         expire_after_s: int,
     ) -> Task | None:
         expire_threshold = datetime.now(UTC) - timedelta(seconds=expire_after_s)
-
-        return await self._model.filter(
+        return await self.first(
             ref_type=ref_type,
-            updated_at__lt=expire_threshold
-        ).order_by("updated_at").first()
+            updated_at__lt=expire_threshold,
+            sort="updated_at"
+        )
 
     async def update_by_id(self, task_id: uuid.UUID, **kwargs: Any) -> Task | None:
         obj = await self.get_by_pk(task_id)
