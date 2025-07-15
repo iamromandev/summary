@@ -4,7 +4,7 @@ from pydantic import HttpUrl
 
 from src.core.types import Code, ErrorType
 
-WEB_URL: HttpUrl = HttpUrl("https://edition.cnn.com")
+WEB_URL: HttpUrl = HttpUrl("https://www.wikipedia.org")
 # PW_USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36"
 PW_USER_AGENT = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
