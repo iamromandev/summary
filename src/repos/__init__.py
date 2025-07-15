@@ -5,7 +5,7 @@ from .task import TaskRepo
 from .url import UrlRepo
 
 
-async def get_state_repo() -> AsyncGenerator[TaskRepo]:
+async def get_task_repo() -> AsyncGenerator[TaskRepo]:
     yield TaskRepo()
 
 async def get_url_repo() -> AsyncGenerator[UrlRepo]:

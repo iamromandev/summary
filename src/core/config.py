@@ -30,6 +30,8 @@ class Settings(BaseSettings):
     playwright_port: int = Field(...)
     playwright_headless: bool = Field(...)
     playwright_user_agent: str = Field(...)
+    # crawl
+    crawl_url_expiration: int = Field(...)
 
     model_config = SettingsConfigDict(
         env_file=".env",
