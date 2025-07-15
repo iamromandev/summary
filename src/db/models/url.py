@@ -10,6 +10,7 @@ class Url(Base):
     )
     base_url: fields.CharField = fields.CharField(max_length=2048, null=True)
     title: fields.CharField = fields.CharField(max_length=256, null=True)
+    meta: fields.JSONField[dict | list | None] = fields.JSONField(null=True)
 
     class Meta:
         ordering = ["url"]

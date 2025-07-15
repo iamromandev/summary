@@ -1,8 +1,12 @@
 from collections.abc import AsyncGenerator
 
-from .raw_repo import RawRepo
-from .url_repo import UrlRepo
+from .raw import RawRepo
+from .task import TaskRepo
+from .url import UrlRepo
 
+
+async def get_state_repo() -> AsyncGenerator[TaskRepo]:
+    yield TaskRepo()
 
 async def get_url_repo() -> AsyncGenerator[UrlRepo]:
     yield UrlRepo()

@@ -5,31 +5,46 @@ import src.core.common as common
 from src.core.base import BaseService
 from src.core.clients import PlaywrightClient
 from src.core.formats import serialize
+from src.core.types import ModelType
 from src.db.models import Raw, Url
-from src.repos.raw_repo import RawRepo
-from src.repos.url_repo import UrlRepo
+from src.repos import RawRepo, StateRepo, UrlRepo
 
 
 class ExtractService(BaseService):
     _playwright_client: PlaywrightClient
+    _state_repo: StateRepo
     _url_repo: UrlRepo
     _raw_repo: RawRepo
 
     def __init__(
         self,
         playwright_client: PlaywrightClient,
+        state_repo: StateRepo,
         url_repo: UrlRepo,
         raw_repo: RawRepo
     ) -> None:
         super().__init__()
         self._playwright_client = playwright_client
+        self._state_repo = state_repo
         self._url_repo = url_repo
         self._raw_repo = raw_repo
 
+    async def _is_new(self, url: HttpUrl) -> bool:
+        db_url, created = await self._url_repo.get_or_create(
+            url=serialize(url),
+            base_url=serialize(common.get_base_url(url))
+        )
+        if not created:
+            return False
+        await  self._state_repo.create_or_update(
+            ref=db_url.pk,
+            ref_type=ModelType.URL
+        )
+        return True
+
     async def extract(self, url: HttpUrl) -> None:
         logger.debug(f"{self._tag}|extract(): Starting extraction for {url}")
-        db_url_exists: bool = await self._url_repo.exists(url=serialize(url))
-        if db_url_exists:
+        if not await self._is_new(url):
             return
         db_url: Url = await  self._url_repo.create_or_update(
             url=serialize(url),

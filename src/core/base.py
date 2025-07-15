@@ -192,8 +192,8 @@ class BaseRepo(Generic[_ModelT]):
     async def filter_existing_ids(self, ids: list[uuid.UUID]) -> list[uuid.UUID]:
         return await self._model.filter(id__in=ids).values_list("id", flat=True)
 
-    async def get_or_create(self, **defaults: Any) -> tuple[_ModelT, bool]:
-        return await self._model.get_or_create(**defaults)
+    async def get_or_create(self, **kwargs: Any) -> tuple[_ModelT, bool]:
+        return await self._model.get_or_create(**kwargs)
 
     async def create(self, **kwargs: Any) -> _ModelT:
         return await self._model.create(**kwargs)
