@@ -2,8 +2,9 @@ import uuid
 from datetime import UTC, date, datetime, time
 from enum import Enum
 from typing import Any
+from urllib.parse import unquote, urlsplit, urlunsplit
 
-from pydantic import BaseModel, HttpUrl, RedisDsn, SecretStr, WebsocketUrl
+from pydantic import BaseModel, HttpUrl, RedisDsn, SecretStr, ValidationError, WebsocketUrl
 
 
 def exclude_empty(data: dict) -> dict:
@@ -49,3 +50,24 @@ def serialize(obj: Any, instructions: dict[type, type] | None = None) -> Any:
 
     else:
         raise TypeError(f"Object of type {type(obj)} is not serializable")
+
+def clean_url(url: str | HttpUrl) -> HttpUrl:
+    # Convert HttpUrl → str if needed
+    url = str(url)
+
+    # Strip whitespace & invisible chars
+    url = url.strip()
+    url = "".join(ch for ch in url if ch.isprintable())
+
+    # Decode %-encodings like %E2%81%A0 or %20
+    url = unquote(url)
+
+    # Normalize components
+    parsed = urlsplit(url)
+    clean = urlunsplit((parsed.scheme, parsed.netloc, parsed.path, parsed.query, parsed.fragment))
+
+    # Validate and return as HttpUrl
+    try:
+        return HttpUrl(clean)  # Pydantic v2
+    except ValidationError as e:
+        raise ValueError(f"Invalid URL after cleaning: {clean}") from e

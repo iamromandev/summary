@@ -90,8 +90,8 @@ services:
     networks:
       - db
       - cache
-      - playwright
       - server
+      - backend
     depends_on:
       db:
         condition: service_healthy
@@ -123,15 +123,18 @@ networks:
   cache:
     name: cache
     driver: bridge
-  playwright:
-    name: playwright
-    driver: bridge
+#  playwright:
+#    name: playwright
+#    driver: bridge
   server:
     name: server
+    driver: bridge
+  backend:
+    name: backend
     driver: bridge
 
 volumes:
   db:
     name: db-summary
-  prometheus:
-    name: prometheus-summary
+#  prometheus:
+#    name: prometheus-summary

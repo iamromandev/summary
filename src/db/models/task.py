@@ -1,3 +1,4 @@
+import uuid
 from datetime import UTC, datetime
 
 from tortoise import fields
@@ -7,17 +8,17 @@ from src.core.types import Action, State
 
 
 class Task(Base):
-    ref: fields.UUIDField = fields.UUIDField(null=False)
-    ref_type: fields.CharField = fields.CharField(max_length=32, null=False)
-    action: fields.CharEnumField = fields.CharEnumField(
+    ref: uuid.UUID = fields.UUIDField()
+    ref_type: str = fields.CharField(max_length=32)
+    action: Action = fields.CharEnumField(
         Action,
         default=Action.UNKNOWN,
     )
-    state: fields.CharEnumField = fields.CharEnumField(
+    state: State = fields.CharEnumField(
         State,
         default=State.UNKNOWN,
     )
-    meta: fields.JSONField[dict | list | None] = fields.JSONField(null=True)
+    meta: dict | list | None = fields.JSONField(null=True)
 
     class Meta:
         ordering = ["ref", "ref_type"]

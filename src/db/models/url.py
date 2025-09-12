@@ -5,12 +5,12 @@ from src.db.validators import UrlValidator
 
 
 class Url(Base):
-    url: fields.CharField = fields.CharField(
-        max_length=2048, unique=True, null=False, validators=[UrlValidator()]
+    url: str = fields.CharField(
+        max_length=2048, unique=True, validators=[UrlValidator()]
     )
-    base_url: fields.CharField = fields.CharField(max_length=2048, null=True)
-    title: fields.CharField = fields.CharField(max_length=256, null=True)
-    meta: fields.JSONField[dict | list | None] = fields.JSONField(null=True)
+    base_url: str = fields.CharField(max_length=2048, validators=[UrlValidator()])
+    title: str | None = fields.CharField(max_length=256, null=True)
+    meta: dict | list | None = fields.JSONField(null=True)
 
     class Meta:
         ordering = ["url"]

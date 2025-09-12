@@ -1,12 +1,10 @@
 from collections.abc import AsyncGenerator
-from typing import Annotated
-
-from pydantic import Field, RedisDsn
 
 from src.core.config import settings
 
 from .cache import CacheClient
-from .playwright import PlaywrightClient
+from .http import HttpClientFactory
+from .soup import SoupClient
 
 
 async def get_cache_client(
@@ -16,12 +14,13 @@ async def get_cache_client(
     )
 
 
-async def get_playwright_client() -> AsyncGenerator[PlaywrightClient]:
-    client = PlaywrightClient(
-        playwright_url=settings.playwright_url,
-        headless=settings.playwright_headless,
-        user_agent=settings.playwright_user_agent
+async def get_http_client_factory(
+) -> AsyncGenerator[HttpClientFactory]:
+    yield HttpClientFactory(
     )
-    await client.start()
-    yield client
-    await client.close()
+
+
+async def get_soup_client(
+) -> AsyncGenerator[SoupClient]:
+    yield SoupClient(
+    )

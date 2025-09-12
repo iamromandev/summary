@@ -10,18 +10,18 @@ class RawRepo(BaseRepo[Raw]):
         super().__init__(Raw)
 
     async def create_or_update(
-        self, url: Url, html: str, **kwargs: Any
+        self, url: Url, content: str, **kwargs: Any
     ) -> Raw:
         latest_raw = await self._model.filter(url=url).order_by("-updated_at").first()
 
         if latest_raw:
             time_diff = datetime.now(UTC) - latest_raw.updated_at.astimezone(UTC)
             if time_diff >= timedelta(weeks=1):
-                latest_raw.html = html
+                latest_raw.content = content
                 for attr, value in kwargs.items():
                     setattr(latest_raw, attr, value)
                 await latest_raw.save()
                 return latest_raw
 
         # Create new raw if no recent record found or latest is recent
-        return await self._model.create(url=url, html=html, **kwargs)
+        return await self._model.create(url=url, content=content, **kwargs)

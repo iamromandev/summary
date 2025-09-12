@@ -1,35 +1,42 @@
+from typing import Any
 
+import httpx
 from loguru import logger
 from pydantic import HttpUrl
 
 import src.core.common as common
 from src.core.base import BaseService
-from src.core.clients import PlaywrightClient
-from src.core.formats import serialize
+from src.core.clients import HttpClientFactory, SoupClient
+from src.core.formats import clean_url, serialize
 from src.core.types import Action, ModelType, State
 from src.db.models import Raw, Task, Url
 from src.repos import RawRepo, TaskRepo, UrlRepo
 
 
 class CrawlService(BaseService):
-    _playwright_client: PlaywrightClient
+    _http_client_factory: HttpClientFactory
+    _soup_client: SoupClient
     _task_repo: TaskRepo
     _url_repo: UrlRepo
     _raw_repo: RawRepo
 
     def __init__(
         self,
-        playwright_client: PlaywrightClient,
+        http_client_factory: HttpClientFactory,
+        soup_client: SoupClient,
         task_repo: TaskRepo,
         url_repo: UrlRepo,
         raw_repo: RawRepo,
+        crawl_base_url: HttpUrl,
         crawl_url_expiration: int
     ) -> None:
         super().__init__()
-        self._playwright_client = playwright_client
+        self._http_client_factory = http_client_factory
+        self._soup_client = soup_client
         self._task_repo = task_repo
         self._url_repo = url_repo
         self._raw_repo = raw_repo
+        self._crawl_url = HttpUrl(f"{crawl_base_url}crawl")
         self._crawl_url_expiration = crawl_url_expiration
 
     async def _ensure_url_task_status(self, url: HttpUrl, delay_s: int = 3600) -> tuple[Url, Task, bool]:
@@ -90,6 +97,8 @@ class CrawlService(BaseService):
         return None, None
 
     async def _store_new_extracted_urls(self, urls: list[HttpUrl]) -> None:
+        logger.debug(f"{self._tag}|_store_new_extracted_urls(): Storing {len(urls)} extracted URLs")
+
         for extracted_url in urls:
             base_url = serialize(common.get_base_url(extracted_url))
             url_str = serialize(extracted_url)
@@ -114,6 +123,7 @@ class CrawlService(BaseService):
                 )
 
     async def crawl(self, url: HttpUrl) -> None:
+        url = clean_url(url)
         logger.debug(f"{self._tag}|crawl(): Starting crawl for {url}")
         next_db_url, next_db_task, task_status = await self._ensure_url_task_status(url)
 
@@ -130,26 +140,63 @@ class CrawlService(BaseService):
                 action=Action.CRAWL,
                 state=State.RUNNING
             )
-            html: str = await self._playwright_client.get_html(url)
+            url = HttpUrl(next_db_url.url)
+            logger.debug(f"{self._tag}|crawl(): Crawling Server URL: {self._crawl_url}")
+            http_client = self._http_client_factory.get_client(
+                url=self._crawl_url
+            )
+            try:
+                params = {"url": HttpUrl(next_db_url.url)}
+                content: dict[str, Any] = await http_client.get(
+                    url=self._crawl_url, params=params,
+                )
+            except httpx.ConnectError as error:
+                logger.error(f"{self._tag}|crawl(): Connection error fetching {url}: {error}")
+                await self._task_repo.update_by_id(
+                    task_id=next_db_task.id,
+                    action=Action.CRAWL,
+                    state=State.FAILED
+                )
+                next_db_url, next_db_task = await self._find_next_url_task()
+                continue
+            except httpx.ReadTimeout as error:
+                logger.error(f"{self._tag}|crawl(): Timeout fetching {url}: {error}")
+                await self._task_repo.update_by_id(
+                    task_id=next_db_task.id,
+                    action=Action.CRAWL,
+                    state=State.TIMEOUT
+                )
+                next_db_url, next_db_task = await self._find_next_url_task()
+                continue
+            logger.debug(f"{self._tag}|crawl(): Fetched content from {url}")
+            html = common.safely_deep_get(content,keys= "data.html")
+            urls = common.safely_deep_get(content, keys="data.urls", default=[])
+            if urls:
+                await self._store_new_extracted_urls(urls)
+            if not html:
+                logger.error(f"{self._tag}|crawl(): No HTML content found for {url}")
+                await self._task_repo.update_by_id(
+                    task_id=next_db_task.id,
+                    action=Action.CRAWL,
+                    state=State.FAILED
+                )
+                next_db_url, next_db_task = await self._find_next_url_task()
+                continue
+
             raw: Raw = await  self._raw_repo.create_or_update(
                 url=next_db_url,
-                html=html,
+                content=html,
                 meta={
                     "size": len(html.encode("utf-8")),
                 }
             )
-            logger.debug(f"{self._tag}|crawl(): Raw HTML saved: {raw}")
+            logger.debug(f"{self._tag}|crawl(): Raw content saved: {raw}")
             await self._task_repo.update_by_id(
                 task_id=next_db_task.id,
                 action=Action.CRAWL,
                 state=State.COMPLETED
             )
-
-            extracted_urls: list[HttpUrl] | None = await self._playwright_client.get_urls(url)
-            if extracted_urls:
-                await self._store_new_extracted_urls(extracted_urls)
-
             next_db_url, next_db_task = await self._find_next_url_task()
-            logger.debug(f"{self._tag}|crawl(): Extracted URLs: {extracted_urls}")
+            logger.debug(f"{self._tag}|crawl(): Extracted URLs: {urls}")
 
-        return
+        return None
