@@ -73,4 +73,3 @@ WORKDIR $WORK_DIR
 COPY --from=builder $INSTALL_DIR $INSTALL_DIR
 #COPY --from=builder /root/.cache/ms-playwright /root/.cache/ms-playwright
 COPY . $WORK_DIR
-RUN playwright install --with-deps chromium

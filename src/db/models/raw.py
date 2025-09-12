@@ -6,13 +6,13 @@ from .url import Url
 
 
 class Raw(Base):
-    url: fields.ForeignKeyRelation["Url"] = fields.ForeignKeyField(
+    url: "Url" = fields.ForeignKeyField(
         model_name="models.Url",
         related_name="raws",
         on_delete=fields.CASCADE
     )
-    html: fields.TextField = fields.TextField(null=True)
-    meta: fields.JSONField[dict | list | None] = fields.JSONField(null=True)
+    content: str = fields.TextField()
+    meta: dict | list | None = fields.JSONField(null=True)
 
     class Meta:
         ordering = ["-created_at"]

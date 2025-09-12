@@ -1,7 +1,8 @@
 from functools import cached_property
+from typing import Annotated
 from urllib.parse import quote_plus
 
-from pydantic import Field, RedisDsn, WebsocketUrl
+from pydantic import Field, HttpUrl, RedisDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from .types import Env
@@ -9,29 +10,32 @@ from .types import Env
 
 class Settings(BaseSettings):
     # core
-    env: Env = Field(...)
-    debug: bool = Field(...)
+    env: Annotated[Env, Field(description="Application environment")]
+    debug: Annotated[bool, Field(description="Enable debug mode")]
     # db
-    db_host: str = Field(...)
-    db_port: int = Field(...)
-    db_name: str = Field(...)
-    db_user: str = Field(...)
-    db_password: str = Field(...)
-    db_root_password: str = Field(...)
+    db_connection: Annotated[str, Field(description="Database connection type")]
+    db_host: Annotated[str, Field(description="Database host")]
+    db_port: Annotated[int, Field(description="Database port")]
+    db_name: Annotated[str, Field(description="Database name")]
+    db_user: Annotated[str, Field(description="Database user")]
+    db_password: Annotated[str, Field(description="Database password")]
+    db_root_password: Annotated[str, Field(description="Root database password")]
     # cache
-    cache_connection: str = Field(...)
-    cache_host: str = Field(...)
-    cache_port: int = Field(...)
-    cache_user: str = Field(...)
-    cache_password: str = Field(...)
-    # playwright
-    playwright_connection: str = Field(...)
-    playwright_host: str = Field(...)
-    playwright_port: int = Field(...)
-    playwright_headless: bool = Field(...)
-    playwright_user_agent: str = Field(...)
+    cache_connection: Annotated[str, Field(description="Cache connection type")]
+    cache_host: Annotated[str, Field(description="Cache host")]
+    cache_port: Annotated[int, Field(description="Cache port")]
+    cache_user: Annotated[str, Field(description="Cache user")]
+    cache_password: Annotated[str, Field(description="Cache password")]
     # crawl
-    crawl_url_expiration: int = Field(...)
+    crawl_server_schema: Annotated[str, Field(description="Crawl server schema")]
+    crawl_server_host: Annotated[str, Field(description="Crawl server host")]
+    crawl_server_port: Annotated[int, Field(description="Crawl server port")]
+    crawl_url_expiration: Annotated[int, Field(description="URL expiration time (seconds)")]
+    # httpx
+    httpx_connect: Annotated[float, Field(description="HTTPX connect timeout")]
+    httpx_read: Annotated[float, Field(description="HTTPX read timeout")]
+    httpx_write: Annotated[float, Field(description="HTTPX write timeout")]
+    httpx_pool: Annotated[float, Field(description="HTTPX pool timeout")]
 
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -68,11 +72,11 @@ class Settings(BaseSettings):
         )
 
     @cached_property
-    def playwright_url(self) -> WebsocketUrl:
-        return WebsocketUrl.build(
-            scheme=self.playwright_connection,
-            host=self.playwright_host,
-            port=self.playwright_port,
+    def crawl_base_url(self) -> HttpUrl:
+        return HttpUrl.build(
+            scheme=self.crawl_server_schema,
+            host=self.crawl_server_host,
+            port=self.crawl_server_port,
         )
 
 
