@@ -1,5 +1,6 @@
 import uuid
 from datetime import UTC, datetime
+from typing import Any
 
 from tortoise import fields
 
@@ -12,13 +13,13 @@ class Task(Base):
     ref_type: str = fields.CharField(max_length=32)
     action: Action = fields.CharEnumField(
         Action,
-        default=Action.UNKNOWN,
+        default=Action.OTHER,
     )
     state: State = fields.CharEnumField(
         State,
-        default=State.UNKNOWN,
+        default=State.OTHER,
     )
-    meta: dict | list | None = fields.JSONField(null=True)
+    meta: dict[str, Any] | list[None] | None = fields.JSONField(null=True, default=None)
 
     class Meta:
         ordering = ["ref", "ref_type"]

@@ -2,16 +2,16 @@ from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from src.core.base import BaseRepo
-from src.db.models import Raw, Url
+from src.db.models import Data, Url
 
 
-class RawRepo(BaseRepo[Raw]):
+class DataRepo(BaseRepo[Data]):
     def __init__(self) -> None:
-        super().__init__(Raw)
+        super().__init__(Data)
 
     async def create_or_update(
         self, url: Url, content: str, **kwargs: Any
-    ) -> Raw:
+    ) -> Data:
         latest_raw = await self._model.filter(url=url).order_by("-updated_at").first()
 
         if latest_raw:

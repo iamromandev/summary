@@ -15,7 +15,7 @@ _ModelT = TypeVar("_ModelT", bound=models.Model)
 
 
 class Base(models.Model):
-    id: uuid.UUID = fields.UUIDField(pk=True, default=uuid.uuid4)
+    id: uuid.UUID = fields.UUIDField(primary_key=True, default=uuid.uuid4)
     created_at: datetime = fields.DatetimeField(auto_now_add=True)
     updated_at: datetime = fields.DatetimeField(auto_now=True)
     deleted_at: datetime | None = fields.DatetimeField(null=True)

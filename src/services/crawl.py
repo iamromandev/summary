@@ -9,8 +9,8 @@ from src.core.base import BaseService
 from src.core.clients import HttpClientFactory, SoupClient
 from src.core.formats import clean_url, serialize
 from src.core.types import Action, ModelType, State
-from src.db.models import Raw, Task, Url
-from src.repos import RawRepo, TaskRepo, UrlRepo
+from src.db.models import Data, Task, Url
+from src.repos import DataRepo, TaskRepo, UrlRepo
 
 
 class CrawlService(BaseService):
@@ -18,7 +18,7 @@ class CrawlService(BaseService):
     _soup_client: SoupClient
     _task_repo: TaskRepo
     _url_repo: UrlRepo
-    _raw_repo: RawRepo
+    _data_repo: DataRepo
 
     def __init__(
         self,
@@ -26,7 +26,7 @@ class CrawlService(BaseService):
         soup_client: SoupClient,
         task_repo: TaskRepo,
         url_repo: UrlRepo,
-        raw_repo: RawRepo,
+        data_repo: DataRepo,
         crawl_base_url: HttpUrl,
         crawl_url_expiration: int
     ) -> None:
@@ -35,7 +35,7 @@ class CrawlService(BaseService):
         self._soup_client = soup_client
         self._task_repo = task_repo
         self._url_repo = url_repo
-        self._raw_repo = raw_repo
+        self._data_repo = data_repo
         self._crawl_url = HttpUrl(f"{crawl_base_url}crawl")
         self._crawl_url_expiration = crawl_url_expiration
 
@@ -182,15 +182,17 @@ class CrawlService(BaseService):
                 )
                 next_db_url, next_db_task = await self._find_next_url_task()
                 continue
-
-            raw: Raw = await  self._raw_repo.create_or_update(
+            json = common.html_to_json(url, html)
+            logger.debug(f"{self._tag}|crawl(): Converted HTML to JSON for {url}")
+            data: Data = await  self._data_repo.create_or_update(
                 url=next_db_url,
                 content=html,
                 meta={
                     "size": len(html.encode("utf-8")),
+                    "json": json,
                 }
             )
-            logger.debug(f"{self._tag}|crawl(): Raw content saved: {raw}")
+            logger.debug(f"{self._tag}|crawl(): Data saved: {data}")
             await self._task_repo.update_by_id(
                 task_id=next_db_task.id,
                 action=Action.CRAWL,

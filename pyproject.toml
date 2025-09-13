@@ -24,6 +24,7 @@ dependencies = [
     "toml==0.10.2",
     "beautifulsoup4==4.13.4",
     "aiohttp==3.12.13",
+    "trafilatura==2.0.0",
 ]
 
 [dependency-groups]
