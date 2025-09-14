@@ -231,15 +231,14 @@ class ContentType(str, Enum):
 
 class ModelType(StrEnum):
     URL = "url"
-    RAW = "raw"
-    OTHER = "other"
+    DATA = "data"
 
     @classmethod
-    def value_of(cls, value: str) -> Self:
+    def value_of(cls, value: str) -> Self | None:
         try:
             return cls(value)
         except ValueError:
-            return cls.OTHER
+            return None
 
 
 class Action(StrEnum):
@@ -313,129 +312,125 @@ class Action(StrEnum):
     QUEUE = "queue"  # Communication/messaging: queue
     DEQUEUE = "dequeue"  # Communication/messaging: dequeue
 
-    OTHER = "other"  # Miscellaneous/fallback: other
-
     @classmethod
-    def value_of(cls, value: str) -> Self:
+    def value_of(cls, value: str) -> Self | None:
         try:
             return cls(value.lower())
         except ValueError:
-            return cls.OTHER
+            return None
 
 
 class State(StrEnum):
-    NEW = "new"                  # Just created, not started yet
-    PENDING = "pending"          # Waiting for a resource or dependency
-    QUEUED = "queued"            # In queue, scheduled to be processed
-    SCHEDULED = "scheduled"      # Assigned for future execution
-    INITIALIZING = "initializing" # Starting up, loading resources
-    STARTING = "starting"        # Beginning execution
-    RUNNING = "running"          # Actively processing
-    PROCESSING = "processing"    # Similar to running, used for data
-    VALIDATING = "validating"    # Checking constraints, formats
-    CHECKING = "checking"        # Generic verification or check
-    TRANSFORMING = "transforming" # Performing transformation step
-    WAITING = "waiting"          # Paused, waiting for event or signal
-    BLOCKED = "blocked"          # Cannot proceed due to external issue
-    DEFERRED = "deferred"        # Postponed due to unmet conditions
-    SKIPPED = "skipped"          # Intentionally not executed
+    NEW = "new"  # Just created, not started yet
+    PENDING = "pending"  # Waiting for a resource or dependency
+    QUEUED = "queued"  # In queue, scheduled to be processed
+    SCHEDULED = "scheduled"  # Assigned for future execution
+    INITIALIZING = "initializing"  # Starting up, loading resources
+    STARTING = "starting"  # Beginning execution
+    RUNNING = "running"  # Actively processing
+    PROCESSING = "processing"  # Similar to running, used for data
+    VALIDATING = "validating"  # Checking constraints, formats
+    CHECKING = "checking"  # Generic verification or check
+    TRANSFORMING = "transforming"  # Performing transformation step
+    WAITING = "waiting"  # Paused, waiting for event or signal
+    BLOCKED = "blocked"  # Cannot proceed due to external issue
+    DEFERRED = "deferred"  # Postponed due to unmet conditions
+    SKIPPED = "skipped"  # Intentionally not executed
     INTERRUPTED = "interrupted"  # Unexpectedly halted
-    RETRY = "retry"              # Scheduled to retry after failure
-    TIMEOUT = "timeout"          # Exceeded allowed time limit
-    FAILED = "failed"            # Failed during execution
-    ERROR = "error"              # Error occurred, similar to failed
-    ABORTED = "aborted"          # Manually stopped or aborted
-    CANCELED = "canceled"        # Manually or automatically canceled
-    COMPLETED = "completed"      # Finished all operations
-    SUCCESS = "success"          # Completed successfully
-    PARTIAL_SUCCESS = "partial_success" # Some tasks succeeded
-    STALE = "stale"              # Too old or irrelevant to continue
-    ARCHIVED = "archived"        # Marked for long-term storage
-    EXPIRED = "expired"          # Reached its end of validity
-    SUSPENDED = "suspended"      # Temporarily paused
-    RESUMED = "resumed"          # Resumed from suspension
-    OTHER = "other"              # Miscellaneous fallback
+    RETRY = "retry"  # Scheduled to retry after failure
+    TIMEOUT = "timeout"  # Exceeded allowed time limit
+    FAILED = "failed"  # Failed during execution
+    ERROR = "error"  # Error occurred, similar to failed
+    ABORTED = "aborted"  # Manually stopped or aborted
+    CANCELED = "canceled"  # Manually or automatically canceled
+    COMPLETED = "completed"  # Finished all operations
+    SUCCESS = "success"  # Completed successfully
+    PARTIAL_SUCCESS = "partial_success"  # Some tasks succeeded
+    STALE = "stale"  # Too old or irrelevant to continue
+    ARCHIVED = "archived"  # Marked for long-term storage
+    EXPIRED = "expired"  # Reached its end of validity
+    SUSPENDED = "suspended"  # Temporarily paused
+    RESUMED = "resumed"  # Resumed from suspension
 
     @classmethod
-    def value_of(cls, value: str) -> Self:
+    def value_of(cls, value: str) -> Self | None:
         try:
             return cls(value.lower())
         except ValueError:
-            return cls.OTHER
+            return None
 
 
 class DataSource(StrEnum):
-    API = "api"                         # Data from APIs
-    USER = "user"                       # Direct user input
-    CRAWLER = "crawler"                 # Web crawling / scraping
-    SYSTEM = "system"                   # System generated logs/events
-    DATABASE = "database"               # Imported from a DB
-    FILE_UPLOAD = "file_upload"         # User uploaded files
-    SENSOR = "sensor"                   # IoT/sensor data
-    STREAM = "stream"                   # Live streaming sources
-    MANUAL = "manual"                   # Manual entry
+    API = "api"  # Data from APIs
+    USER = "user"  # Direct user input
+    CRAWLER = "crawler"  # Web crawling / scraping
+    SYSTEM = "system"  # System generated logs/events
+    DATABASE = "database"  # Imported from a DB
+    FILE_UPLOAD = "file_upload"  # User uploaded files
+    SENSOR = "sensor"  # IoT/sensor data
+    STREAM = "stream"  # Live streaming sources
+    MANUAL = "manual"  # Manual entry
     EXTERNAL_SERVICE = "external_service"  # Third-party service
-    MOBILE_APP = "mobile_app"           # Data from mobile applications
-    DESKTOP_APP = "desktop_app"         # Data from desktop clients
-    EMAIL = "email"                     # Extracted from emails
-    MESSAGE_QUEUE = "message_queue"     # Kafka/RabbitMQ etc.
-    LOG = "log"                         # Logs from apps/infra
-    BACKUP = "backup"                   # Restored from backups
-    TEST = "test"                       # Synthetic/test data
+    MOBILE_APP = "mobile_app"  # Data from mobile applications
+    DESKTOP_APP = "desktop_app"  # Data from desktop clients
+    EMAIL = "email"  # Extracted from emails
+    MESSAGE_QUEUE = "message_queue"  # Kafka/RabbitMQ etc.
+    LOG = "log"  # Logs from apps/infra
+    BACKUP = "backup"  # Restored from backups
+    TEST = "test"  # Synthetic/test data
 
 
 class DataStatus(StrEnum):
-    ACTIVE = "active"                   # Currently valid and usable
-    INACTIVE = "inactive"               # Not in use but not deleted
-    ARCHIVED = "archived"               # Old data kept for record
-    DELETED = "deleted"                 # Marked for deletion
-    PENDING = "pending"                 # Awaiting processing or approval
-    PROCESSING = "processing"           # In progress of being handled
-    FAILED = "failed"                   # Data processing failed
-    COMPLETED = "completed"             # Fully processed
-    DRAFT = "draft"                     # Work in progress, not finalized
-    REVIEW = "review"                   # Under human/auto review
-    APPROVED = "approved"               # Reviewed & approved
-    REJECTED = "rejected"               # Reviewed & rejected
-    EXPIRED = "expired"                 # No longer valid due to time
-    LOCKED = "locked"                   # Frozen, cannot be modified
-    SCHEDULED = "scheduled"             # Planned for future activation
+    ACTIVE = "active"  # Currently valid and usable
+    INACTIVE = "inactive"  # Not in use but not deleted
+    ARCHIVED = "archived"  # Old data kept for record
+    DELETED = "deleted"  # Marked for deletion
+    PENDING = "pending"  # Awaiting processing or approval
+    PROCESSING = "processing"  # In progress of being handled
+    FAILED = "failed"  # Data processing failed
+    COMPLETED = "completed"  # Fully processed
+    DRAFT = "draft"  # Work in progress, not finalized
+    REVIEW = "review"  # Under human/auto review
+    APPROVED = "approved"  # Reviewed & approved
+    REJECTED = "rejected"  # Reviewed & rejected
+    EXPIRED = "expired"  # No longer valid due to time
+    LOCKED = "locked"  # Frozen, cannot be modified
+    SCHEDULED = "scheduled"  # Planned for future activation
 
 
 class DataVisibility(StrEnum):
-    PUBLIC = "public"                   # Visible to everyone
-    PRIVATE = "private"                 # Visible only to owner
-    INTERNAL = "internal"               # Restricted to organization/team
-    RESTRICTED = "restricted"           # Specific group/role access
-    CONFIDENTIAL = "confidential"       # Highly restricted data
-    SECRET = "secret"                   # Extremely sensitive data
-    ANONYMOUS = "anonymous"             # Data visible without attribution
-    ENCRYPTED = "encrypted"             # Must be decrypted to be visible
-    TOKEN_PROTECTED = "token_protected" # Requires secure token for access
-    PAID = "paid"                       # Paywall-protected data
-    TEMPORARY = "temporary"             # Visible only for limited time
+    PUBLIC = "public"  # Visible to everyone
+    PRIVATE = "private"  # Visible only to owner
+    INTERNAL = "internal"  # Restricted to organization/team
+    RESTRICTED = "restricted"  # Specific group/role access
+    CONFIDENTIAL = "confidential"  # Highly restricted data
+    SECRET = "secret"  # Extremely sensitive data
+    ANONYMOUS = "anonymous"  # Data visible without attribution
+    ENCRYPTED = "encrypted"  # Must be decrypted to be visible
+    TOKEN_PROTECTED = "token_protected"  # Requires secure token for access
+    PAID = "paid"  # Paywall-protected data
+    TEMPORARY = "temporary"  # Visible only for limited time
 
 
 class DataType(StrEnum):
-    DOCUMENT = "document"           # PDFs, Word files, reports
-    IMAGE = "image"                 # JPG, PNG, GIF
-    VIDEO = "video"                 # MP4, MOV, AVI
-    AUDIO = "audio"                 # MP3, WAV, podcasts
-    SENSOR = "sensor"               # IoT or sensor readings
-    LOG = "log"                     # System/app logs
-    TRANSACTION = "transaction"     # Financial or business transactions
-    WEBPAGE = "webpage"             # HTML pages or web content
-    EMAIL = "email"                 # Emails, messages
-    SCRIPT = "script"               # Code files, automation scripts
-    API = "api"                     # API responses
-    DATABASE = "database"           # DB dumps or rows
-    BACKUP = "backup"               # Backup files
-    CONFIGURATION = "configuration" # Config files, YAML/JSON
-    ARCHIVE = "archive"             # Compressed files (ZIP, TAR)
-    MODEL = "model"                 # ML/AI models
-    NOTE = "note"                   # Notes, markdown, annotations
-    STREAM = "stream"               # Streaming data
-    OTHER = "other"                 # Catch-all for unknown data
+    DOCUMENT = "document"  # PDFs, Word files, reports
+    IMAGE = "image"  # JPG, PNG, GIF
+    VIDEO = "video"  # MP4, MOV, AVI
+    AUDIO = "audio"  # MP3, WAV, podcasts
+    SENSOR = "sensor"  # IoT or sensor readings
+    LOG = "log"  # System/app logs
+    TRANSACTION = "transaction"  # Financial or business transactions
+    WEBPAGE = "webpage"  # HTML pages or web content
+    EMAIL = "email"  # Emails, messages
+    SCRIPT = "script"  # Code files, automation scripts
+    API = "api"  # API responses
+    DATABASE = "database"  # DB dumps or rows
+    BACKUP = "backup"  # Backup files
+    CONFIGURATION = "configuration"  # Config files, YAML/JSON
+    ARCHIVE = "archive"  # Compressed files (ZIP, TAR)
+    MODEL = "model"  # ML/AI models
+    NOTE = "note"  # Notes, markdown, annotations
+    STREAM = "stream"  # Streaming data
 
 
 class DataSubType(StrEnum):
@@ -508,5 +503,3 @@ class DataSubType(StrEnum):
     # Notes / annotations
     MARKDOWN = "markdown"
     NOTE = "note"
-
-    OTHER = "other"

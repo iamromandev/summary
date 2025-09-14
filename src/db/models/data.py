@@ -20,23 +20,23 @@ class Data(Base):
         on_delete=fields.SET_NULL,
         null=True,
     )
-    # ownership
-    owner_id: uuid.UUID | None = fields.UUIDField(null=True, index=True)
-    organization: str | None = fields.CharField(max_length=255, null=True)
     # classification
     type: DataType | None = fields.CharEnumField(
-        DataType, null=True
+        DataType, null=True, default=None
     )
     subtype: DataSubType | None = fields.CharEnumField(
-        DataSubType, null=True
+        DataSubType, null=True, default=None
     )
+    # ownership
+    owner_id: uuid.UUID | None = fields.UUIDField(null=True, index=True)
+    organization: str | None = fields.CharField(max_length=256, null=True)
     # lifecycle
-    status: DataStatus = fields.CharEnumField(
+    status: DataStatus | None = fields.CharEnumField(
         DataStatus,
-        default=DataStatus.ACTIVE
+        null=True, default=None
     )
-    visibility: DataVisibility = fields.CharEnumField(
-        DataVisibility, default=DataVisibility.INTERNAL
+    visibility: DataVisibility | None = fields.CharEnumField(
+        DataVisibility, null=True, default=None
     )
     version: int = fields.IntField(default=1)
 
@@ -66,7 +66,6 @@ class Data(Base):
         return f"[Data: {self.source}, {self.type}, {self.subtype}, {self.status}]"
 
     async def save(self, *args, **kwargs):
-        # Automatically compute checksum before saving
         if self.content:
             self.checksum = common.compute_checksum(self.content)
         await super().save(*args, **kwargs)

@@ -9,26 +9,29 @@ from src.core.types import Action, State
 
 
 class Task(Base):
+    type: str = fields.CharField(max_length=32)
     ref: uuid.UUID = fields.UUIDField()
-    ref_type: str = fields.CharField(max_length=32)
-    action: Action = fields.CharEnumField(
-        Action,
-        default=Action.OTHER,
-    )
+
     state: State = fields.CharEnumField(
         State,
-        default=State.OTHER,
+        null=True,
+        default=None,
+    )
+    action: Action | None = fields.CharEnumField(
+        Action,
+        null=True,
+        default=None,
     )
     meta: dict[str, Any] | list[None] | None = fields.JSONField(null=True, default=None)
 
     class Meta:
-        ordering = ["ref", "ref_type"]
-        unique_together = [("ref", "ref_type")]
+        ordering = ["type", "ref"]
+        unique_together = [("type", "ref")]
         table = "task"
         table_description = "Task"
 
     def __str__(self) -> str:
-        return f"[Task: {self.ref}, {self.ref_type}, {self.state}]"
+        return f"[Task: {self.type}, {self.ref}, {self.state}]"
 
     def is_expired(self, delay_s: int) -> bool:
         return (
