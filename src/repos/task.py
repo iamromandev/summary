@@ -30,27 +30,27 @@ class TaskRepo(BaseRepo[Task]):
         return obj
 
     async def get_first_by_states(
-        self, ref_type: ModelType, states: list[State]) -> Task | None:
+        self, type: ModelType, states: list[State]) -> Task | None:
         return await self.first(
-            ref_type=ref_type,
+            type=type,
             state__in=states,
             sort="updated_at"
         )
 
     async def get_first_expired(
         self,
-        ref_type: ModelType,
+        type: ModelType,
         expire_after_s: int,
     ) -> Task | None:
         expire_threshold = datetime.now(UTC) - timedelta(seconds=expire_after_s)
         return await self.first(
-            ref_type=ref_type,
+            type=type,
             updated_at__lt=expire_threshold,
             sort="updated_at"
         )
 
     async def update_by_id(self, task_id: uuid.UUID, **kwargs: Any) -> Task | None:
-        obj = await self.get_by_pk(task_id)
+        obj = await self.get_by_primary_key(task_id)
         if not obj:
             logger.warning(f"{self._tag}|update_by_id(): Task not found with id={task_id}")
             return None

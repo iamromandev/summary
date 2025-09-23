@@ -43,19 +43,29 @@ class BaseRepo(Generic[_ModelT]):
     def _tag(self) -> str:
         return self.__class__.__name__
 
+    async def exists(self, **kwargs: Any) -> bool:
+        return await self._model.filter(**kwargs).exists()
+
+    async def get_or_create(self, **kwargs: Any) -> tuple[_ModelT, bool]:
+        return await self._model.get_or_create(**kwargs)
+
+    async def create(self, **kwargs: Any) -> _ModelT:
+        return await self._model.create(**kwargs)
+
     async def get_or_none(self, **kwargs: Any) -> _ModelT | None:
         try:
             return await self._model.get(**kwargs)
         except DoesNotExist:
             return None
 
-    async def get_by_pk(
+    async def get_by_id(
         self,
-        pk: str | uuid.UUID,
+        id: uuid.UUID,
         select_related: str | Sequence[str] | None = None,
         prefetch_related: str | Sequence[str] | None = None,
+        annotations: dict[str, Any] | None = None,
     ) -> _ModelT | None:
-        query: queryset.QuerySet[_ModelT] = self._model.filter(pk=pk)
+        query: queryset.QuerySet[_ModelT] = self._model.filter(id=id)
 
         # Apply select_related (JOINs for foreign keys)
         if select_related:
@@ -68,6 +78,10 @@ class BaseRepo(Generic[_ModelT]):
             if isinstance(prefetch_related, str):
                 prefetch_related = [prefetch_related]
             query = query.prefetch_related(*prefetch_related)
+
+        # Apply annotations (like Count)
+        if annotations:
+            query = query.annotate(**annotations)
 
         return await query.first()
 
@@ -99,6 +113,7 @@ class BaseRepo(Generic[_ModelT]):
         select_related: str | Sequence[str] | None = None,
         prefetch_related: str | Sequence[str] | None = None,
         annotations: dict[str, Any] | None = None,
+        distinct: bool = False,
         **kwargs: Any
     ) -> list[_ModelT]:
         query: queryset.QuerySet[_ModelT] = self._model.filter(*args, **kwargs)
@@ -123,6 +138,10 @@ class BaseRepo(Generic[_ModelT]):
         if annotations:
             query = query.annotate(**annotations)
 
+        # Apply distinct
+        if distinct:
+            query = query.distinct()
+
         # Sorting
         if sort:
             order_fields = [field.strip() for field in sort.split(",")]
@@ -130,9 +149,6 @@ class BaseRepo(Generic[_ModelT]):
 
         # Return all results
         return await query
-
-    async def exists(self, **kwargs: Any) -> bool:
-        return await self._model.filter(**kwargs).exists()
 
     async def filter(
         self,
@@ -216,12 +232,6 @@ class BaseRepo(Generic[_ModelT]):
     async def filter_existing_ids(self, ids: list[uuid.UUID]) -> list[uuid.UUID]:
         return await self._model.filter(id__in=ids).values_list("id", flat=True)
 
-    async def get_or_create(self, **kwargs: Any) -> tuple[_ModelT, bool]:
-        return await self._model.get_or_create(**kwargs)
-
-    async def create(self, **kwargs: Any) -> _ModelT:
-        return await self._model.create(**kwargs)
-
     async def bulk_create(
         self,
         objects: Iterable[_ModelT | dict[str, Any]],
@@ -246,8 +256,8 @@ class BaseRepo(Generic[_ModelT]):
         await instance.save()
         return instance
 
-    async def update_by_pk(self, pk: str | uuid.UUID, **kwargs: Any) -> _ModelT | None:
-        instance = await self.get_by_pk(pk)
+    async def update_by_id(self, id: uuid.UUID, **kwargs: Any) -> _ModelT | None:
+        instance = await self.get_by_id(id)
         if instance:
             return await self.update(instance, **kwargs)
         return None
@@ -255,8 +265,8 @@ class BaseRepo(Generic[_ModelT]):
     async def delete(self, instance: _ModelT) -> None:
         await instance.delete()
 
-    async def delete_by_pk(self, pk: str | uuid.UUID) -> bool:
-        instance = await self.get_by_pk(pk)
+    async def delete_by_id(self, id: uuid.UUID) -> bool:
+        instance = await self.get_by_id(id)
         if instance:
             await instance.delete()
             return True

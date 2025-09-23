@@ -41,27 +41,25 @@ class CrawlService(BaseService):
 
     async def _ensure_url_task_status(self, url: HttpUrl, delay_s: int = 3600) -> tuple[Url, Task, bool]:
         base_url = serialize(common.get_base_url(url))
-        url_str = serialize(url)
 
         # Get or create the URL
         db_url, url_created = await self._url_repo.get_or_create(
-            url=url_str,
+            url=serialize(url),
             base_url=base_url,
         )
 
         # Try to get existing task
         db_task = await self._task_repo.get_or_none(
+            type=ModelType.URL,
             ref=db_url.pk,
-            ref_type=ModelType.URL,
         )
 
         # If no task exists or URL is newly created, create task
         if db_task is None:
             db_task = await self._task_repo.create(
+                type=ModelType.URL,
                 ref=db_url.pk,
-                ref_type=ModelType.URL,
                 state=State.NEW,
-                action=Action.UNKNOWN,
             )
             return db_url, db_task, True
 
@@ -69,12 +67,10 @@ class CrawlService(BaseService):
         return db_url, db_task, db_task.state == State.NEW or db_task.is_expired(delay_s)
 
     async def _find_next_url_task(self) -> tuple[Url | None, Task | None]:
-        logger.debug(f"{self._tag}|_find_next_url_task()")
-
         # Step 1: Try finding a NEW, RUNNING task first
-        states = [State.NEW, State.RUNNING]
+        states = [State.NEW]
         next_task = await self._task_repo.get_first_by_states(
-            ref_type=ModelType.URL,
+            type=ModelType.URL,
             states=states,
         )
         logger.debug(f"{self._tag}|_find_next_url_task()| NEW task: {next_task}")
@@ -82,7 +78,7 @@ class CrawlService(BaseService):
         # Step 2: If no NEW task, look for expired ones
         if not next_task:
             next_task = await self._task_repo.get_first_expired(
-                ref_type=ModelType.URL,
+                type=ModelType.URL,
                 expire_after_s=self._crawl_url_expiration
             )
             if next_task:
@@ -90,7 +86,7 @@ class CrawlService(BaseService):
 
         # Step 3: Get the associated URL
         if next_task:
-            url = await self._url_repo.get_by_pk(next_task.ref)
+            url = await self._url_repo.get_by_id(next_task.ref)
             if url:
                 return url, next_task
 
@@ -124,9 +120,7 @@ class CrawlService(BaseService):
 
     async def crawl(self, url: HttpUrl) -> None:
         url = clean_url(url)
-        logger.debug(f"{self._tag}|crawl(): Starting crawl for {url}")
         next_db_url, next_db_task, task_status = await self._ensure_url_task_status(url)
-
         logger.debug(f"{self._tag}|crawl(): _ensure_url_task_status: {next_db_url.url} {task_status}")
 
         if not task_status:
