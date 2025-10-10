@@ -5,7 +5,7 @@ from typing import Any
 from tortoise import fields
 
 from src.core.base import Base
-from src.core.types import Action, State
+from src.core.type import Action, State
 
 
 class Task(Base):

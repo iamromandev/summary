@@ -5,7 +5,7 @@ from urllib.parse import quote_plus
 from pydantic import Field, HttpUrl, RedisDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from .types import Env
+from .type import Env
 
 
 class Settings(BaseSettings):

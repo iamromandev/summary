@@ -6,7 +6,7 @@ from tortoise import fields
 
 from src.core import common
 from src.core.base import Base
-from src.core.types import DataSource, DataStatus, DataSubType, DataType, DataVisibility
+from src.core.type import DataSource, DataStatus, DataSubType, DataType, DataVisibility
 
 
 class Data(Base):

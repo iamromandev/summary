@@ -5,7 +5,7 @@ from typing import Any
 from loguru import logger
 
 from src.core.base import BaseRepo
-from src.core.types import ModelType, State
+from src.core.type import ModelType, State
 from src.db.models import Task
 
 

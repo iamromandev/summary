@@ -8,7 +8,7 @@ import src.core.common as common
 from src.core.base import BaseService
 from src.core.clients import HttpClientFactory, SoupClient
 from src.core.formats import clean_url, serialize
-from src.core.types import Action, ModelType, State
+from src.core.type import Action, ModelType, State
 from src.db.models import Data, Task, Url
 from src.repos import DataRepo, TaskRepo, UrlRepo
 

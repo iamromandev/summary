@@ -91,12 +91,16 @@ class BaseRepo(Generic[_ModelT]):
         ids: list[uuid.UUID] | None = None,
         field_name_for_ids: str | None = None,
         sort: str | None = None,
+        distinct: bool = False,
         **kwargs: Any,
     ) -> list[uuid.UUID]:
         query: queryset.QuerySet[_ModelT] = self._model.filter(*args, **kwargs)
 
         if ids and field_name_for_ids:
             query = query.filter(**{f"{field_name_for_ids}__in": ids})
+
+        if distinct:
+            query = query.distinct()
 
         if sort:
             order_fields = [field.strip() for field in sort.split(",")]

@@ -12,7 +12,7 @@ from .base import BaseSchema
 from .constants import EXCEPTION_CODE_MAP, EXCEPTION_ERROR_TYPE_MAP
 from .formats import utc_iso_timestamp
 from .mixins import BaseMixin
-from .types import Code, ErrorType, Status
+from .type import Code, ErrorType, Status
 
 
 class Violation(BaseSchema):

@@ -3,7 +3,7 @@ from typing import Annotated
 from pydantic import Field
 
 from src.core.base import BaseSchema
-from src.core.types import Status
+from src.core.type import Status
 
 
 class HealthSchema(BaseSchema):

@@ -9,7 +9,7 @@ from pydantic import Field
 from .base import BaseSchema
 from .formats import utc_iso_timestamp
 from .mixins import BaseMixin
-from .types import Code, Status
+from .type import Code, Status
 
 
 class Meta(BaseSchema):

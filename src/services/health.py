@@ -1,7 +1,7 @@
 from src.core.base import BaseService
 from src.core.clients import CacheClient
 from src.core.common import get_app_version, get_cache_health
-from src.core.types import Status
+from src.core.type import Status
 from src.db import get_db_health
 from src.schemas.health import HealthSchema
 
